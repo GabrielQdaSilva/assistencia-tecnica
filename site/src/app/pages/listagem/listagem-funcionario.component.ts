@@ -22,11 +22,7 @@ import { Funcionario } from '../../core/types/types';
         </div>
       }
 
-      @if (carregando) {
-        <div class="carregando">Carregando...</div>
-      }
-
-      @if (!erro && !carregando) {
+      @if (!erro) {
         <div class="table-wrap">
           <table>
             <thead>
@@ -88,33 +84,24 @@ import { Funcionario } from '../../core/types/types';
     .erro { padding: 14px 18px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); border-radius: 10px; color: var(--danger); font-size: .85rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .btn-rec { padding: 6px 14px; background: var(--danger); color: #fff; border: none; border-radius: 6px; font-size: .78rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .btn-rec:hover { background: var(--danger-hover); }
-    .carregando { text-align: center; color: var(--text-muted); font-size: .9rem; padding: 40px 0; }
   `]
 })
 export class ListagemFuncionarioComponent implements OnInit {
   lista: Funcionario[] = [];
   erro = '';
-  carregando = true;
   constructor(private service: FuncionariosService) {}
   ngOnInit() { this.carregar(); }
   carregar() {
-    this.carregando = true;
     this.erro = '';
     this.service.listar().subscribe({
-      next: d => { this.lista = d; this.carregando = false; },
-      error: () => {
-        this.carregando = false;
-        this.erro = 'Erro ao conectar ao servidor. Certifique-se de que o backend está rodando (npm run backend).';
-      }
+      next: d => this.lista = d,
+      error: () => this.erro = 'Erro ao conectar ao servidor.'
     });
   }
   excluir(id: number | string) {
     if (id) this.service.excluir(id).subscribe({
       next: () => this.lista = this.lista.filter(f => f.id !== id),
-      error: () => {
-        this.carregando = false;
-        this.erro = 'Erro ao excluir. Verifique o backend.';
-      }
+      error: () => this.erro = 'Erro ao excluir.'
     });
   }
 }
