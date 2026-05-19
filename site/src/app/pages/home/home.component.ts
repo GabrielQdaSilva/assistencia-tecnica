@@ -142,6 +142,91 @@ import { RouterModule } from '@angular/router';
         </div>
       </section>
 
+      <!-- CRUD Flow -->
+      <section class="section flow">
+        <div class="section-inner">
+          <div class="section-header">
+            <h2>CRUD Completo</h2>
+            <p>Cadastre, consulte, altere e exclua — tudo de forma simples e intuitiva</p>
+          </div>
+          <div class="flow-steps">
+            <div class="flow-step">
+              <div class="flow-num">1</div>
+              <div class="flow-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <h3>Cadastrar</h3>
+              <p>Adicione funcionários com nome, cargo, telefone e email. Cadastre clientes com endereço completo e contato.</p>
+            </div>
+            <div class="flow-arrow">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">2</div>
+              <div class="flow-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </div>
+              <h3>Consultar</h3>
+              <p>Busque qualquer registro pelo ID em segundos. Ideal para localizar informações rapidamente no dia a dia.</p>
+            </div>
+            <div class="flow-arrow">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">3</div>
+              <div class="flow-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+              <h3>Alterar</h3>
+              <p>Edite dados existentes de forma intuitiva. Atualize informações sempre que necessário com poucos cliques.</p>
+            </div>
+            <div class="flow-arrow">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">4</div>
+              <div class="flow-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <h3>Excluir</h3>
+              <p>Remova registros com segurança. Mantenha sua base de dados limpa e organizada sem esforço.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Target -->
+      <section class="section target">
+        <div class="section-inner">
+          <div class="section-header">
+            <h2>Para quem é este sistema?</h2>
+          </div>
+          <div class="target-grid">
+            <div class="target-card">
+              <div class="target-icon" style="background: rgba(59,130,246,.12);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <h3>Técnicos Autônomos</h3>
+              <p>Organize seus clientes e tenha o controle dos serviços realizados. Tudo simples e sem burocracia.</p>
+            </div>
+            <div class="target-card">
+              <div class="target-icon" style="background: rgba(59,130,246,.12);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <h3>Assistências Técnicas</h3>
+              <p>Gerencie sua equipe de técnicos e a base de clientes. Tenha tudo centralizado em um só sistema.</p>
+            </div>
+            <div class="target-card">
+              <div class="target-icon" style="background: rgba(59,130,246,.12);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              </div>
+              <h3>Pequenas Empresas</h3>
+              <p>Ideal para negócios que precisam de um controle simples de funcionários e clientes sem custo.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Testimonials -->
       <section class="section testimonials">
         <div class="section-inner">
@@ -359,6 +444,24 @@ import { RouterModule } from '@angular/router';
     .feature-block h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
     .feature-block p { font-size: .85rem; color: var(--text-muted); line-height: 1.5; }
     @media (max-width: 500px) { .features-row { grid-template-columns: 1fr; } }
+
+    /* Flow */
+    .flow { background: var(--bg); }
+    .flow-steps { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; }
+    .flow-step { text-align: center; padding: 28px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; flex: 1; min-width: 160px; max-width: 220px; }
+    .flow-num { width: 32px; height: 32px; margin: 0 auto 12px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; }
+    .flow-icon { margin-bottom: 12px; }
+    .flow-step h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .flow-step p { font-size: .82rem; color: var(--text-muted); line-height: 1.5; }
+    .flow-arrow { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; }
+    @media (max-width: 768px) { .flow-steps { gap: 16px; } .flow-arrow { display: none; } }
+
+    /* Target */
+    .target-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .target-card { text-align: center; padding: 32px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .target-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .target-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .target-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.5; }
 
     /* Testimonials */
     .testimonials { background: var(--surface); }
