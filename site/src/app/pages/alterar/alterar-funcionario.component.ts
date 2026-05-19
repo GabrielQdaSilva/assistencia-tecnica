@@ -9,33 +9,38 @@ import { Funcionario } from '../../core/types/types';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="form-container">
+    <div class="page-card form-card">
       <h2>Alterar Funcionário</h2>
       <form>
-        <label>Nome</label>
-        <input class="input-simples" [(ngModel)]="item.nome" name="nome" />
-
-        <label>Cargo</label>
-        <input class="input-simples" [(ngModel)]="item.cargo" name="cargo" />
-
-        <label>Telefone</label>
-        <input class="input-simples" [(ngModel)]="item.telefone" name="telefone" />
-
-        <label>Email</label>
-        <input class="input-simples" [(ngModel)]="item.email" name="email" />
-
-        <button class="input-submeter" (click)="salvar()">Salvar</button>
+        <div class="field">
+          <label>Nome</label>
+          <input [(ngModel)]="item.nome" name="nome" placeholder="Nome completo" />
+        </div>
+        <div class="field">
+          <label>Cargo</label>
+          <input [(ngModel)]="item.cargo" name="cargo" placeholder="Ex: Técnico" />
+        </div>
+        <div class="field">
+          <label>Telefone</label>
+          <input [(ngModel)]="item.telefone" name="telefone" placeholder="(11) 99999-9999" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input [(ngModel)]="item.email" name="email" placeholder="email@exemplo.com" />
+        </div>
+        <button class="btn-primary btn-block" (click)="salvar()">Salvar</button>
       </form>
     </div>
   `,
   styles: [`
-    .form-container { max-width: 480px; margin: 48px auto; padding: 32px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-    h2 { color: #0f172a; font-size: 1.35rem; font-weight: 700; margin-bottom: 24px; }
-    form label { display: block; margin-bottom: 4px; font-size: .85rem; font-weight: 600; color: #475569; }
-    .input-simples { width: 100%; padding: 10px 12px; font-size: .9rem; margin-bottom: 16px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; transition: border-color .2s; background: #f8fafc; }
-    .input-simples:focus { border-color: #2563eb; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-    .input-submeter { width: 100%; padding: 11px; margin-top: 8px; background: #2563eb; color: #fff; font-size: .9rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background .2s; }
-    .input-submeter:hover { background: #1d4ed8; }
+    .form-card { max-width: 480px; margin: 0 auto; }
+    h2 { color: var(--text); font-size: 1.25rem; font-weight: 700; margin-bottom: 28px; }
+    .field { margin-bottom: 20px; }
+    .field label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 600; color: var(--text-muted); }
+    .field input { width: 100%; padding: 10px 14px; font-size: .9rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); transition: all .15s; }
+    .field input::placeholder { color: var(--text-muted); opacity: .6; }
+    .field input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+    .btn-block { width: 100%; justify-content: center; padding: 11px; margin-top: 8px; font-size: .9rem; }
   `]
 })
 export class AlterarFuncionarioComponent implements OnInit {

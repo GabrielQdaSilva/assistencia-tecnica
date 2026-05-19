@@ -9,7 +9,7 @@ import { ConsultarFuncionarioComponent } from './pages/consultar/consultar-funci
 import { ConsultarClienteComponent } from './pages/consultar/consultar-cliente.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/funcionarios', pathMatch: 'full' },
+  { path: '', component: ListagemFuncionarioComponent, pathMatch: 'full' },
 
   { path: 'funcionarios', component: ListagemFuncionarioComponent },
   { path: 'funcionarios/cadastrar', component: CadastrarFuncionarioComponent },

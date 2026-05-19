@@ -9,69 +9,81 @@ import { Funcionario } from '../../core/types/types';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="content-container">
-      <h2>Funcionários</h2>
+    <div class="page-card">
+      <div class="page-header">
+        <h2>Funcionários</h2>
+        <a class="btn-primary" routerLink="/funcionarios/cadastrar">+ Novo Funcionário</a>
+      </div>
 
       @if (erro) {
         <div class="erro">
-          {{ erro }}
+          <span>{{ erro }}</span>
           <button class="btn-rec" (click)="carregar()">Recarregar</button>
         </div>
       }
 
       @if (!erro) {
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nome</th>
-              <th>Cargo</th>
-              <th>Telefone</th>
-              <th>Email</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (f of lista; track f) {
-            <tr>
-              <td>{{ f.id }}</td>
-              <td>{{ f.nome }}</td>
-              <td>{{ f.cargo }}</td>
-              <td>{{ f.telefone }}</td>
-              <td>{{ f.email }}</td>
-              <td class="acoes">
-                <button class="btn-editar" [routerLink]="['/funcionarios/alterar', f.id]">Editar</button>
-                <button class="btn-excluir" (click)="excluir(f.id!)">Excluir</button>
-              </td>
-            </tr>
-            } @empty {
-            <tr>
-              <td colspan="6" class="vazio">Nenhum funcionário cadastrado.</td>
-            </tr>
-            }
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Cargo</th>
+                <th>Telefone</th>
+                <th>Email</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of lista; track f.id) {
+              <tr>
+                <td class="cell-id">{{ f.id }}</td>
+                <td class="cell-nome">{{ f.nome }}</td>
+                <td>{{ f.cargo }}</td>
+                <td>{{ f.telefone }}</td>
+                <td>{{ f.email }}</td>
+                <td class="acoes">
+                  <button class="btn-sm btn-editar" [routerLink]="['/funcionarios/alterar', f.id]">Editar</button>
+                  <button class="btn-sm btn-excluir" (click)="excluir(f.id!)">Excluir</button>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="6" class="vazio">Nenhum funcionário cadastrado.</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     </div>
   `,
   styles: [`
-    .content-container { max-width: 1000px; margin: 40px auto; padding: 24px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow-x: auto; }
-    h2 { color: #0f172a; font-size: 1.35rem; font-weight: 700; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-    thead tr { background: #2563eb; color: #fff; }
-    th, td { padding: 12px 16px; text-align: left; }
-    th { font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
-    tbody tr { border-bottom: 1px solid #f1f5f9; }
-    tbody tr:hover { background: #f8fafc; }
-    .acoes { display: flex; gap: 8px; }
-    td button { padding: 7px 16px; font-size: .8rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all .2s; }
-    .btn-editar { background: #e2e8f0; color: #475569; }
-    .btn-editar:hover { background: #2563eb; color: #fff; }
-    .btn-excluir { background: #e2e8f0; color: #475569; }
-    .btn-excluir:hover { background: #dc2626; color: #fff; }
-    .vazio { text-align: center; color: #94a3b8; font-style: italic; padding: 32px 16px !important; }
-    .erro { padding: 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: .9rem; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .btn-rec { padding: 6px 14px; background: #dc2626; color: #fff; border: none; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .page-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; box-shadow: var(--shadow); }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-header h2 { color: var(--text); font-size: 1.25rem; font-weight: 700; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: var(--primary); color: #fff; font-size: .85rem; font-weight: 600; border-radius: 8px; text-decoration: none; transition: background .15s; }
+    .btn-primary:hover { background: var(--primary-hover); color: #fff; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead tr { background: rgba(59,130,246,.08); }
+    th { color: var(--text-muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; padding: 12px 14px; text-align: left; }
+    td { padding: 12px 14px; color: var(--text); border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--surface-hover); }
+    .cell-id { color: var(--text-muted); font-size: .8rem; width: 50px; }
+    .cell-nome { font-weight: 500; }
+    .acoes { display: flex; gap: 6px; }
+    .btn-sm { padding: 6px 14px; font-size: .78rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all .15s; }
+    .btn-editar { background: rgba(59,130,246,.12); color: var(--primary); }
+    .btn-editar:hover { background: var(--primary); color: #fff; }
+    .btn-excluir { background: rgba(239,68,68,.12); color: var(--danger); }
+    .btn-excluir:hover { background: var(--danger); color: #fff; }
+    .vazio { text-align: center; color: var(--text-muted); font-style: italic; padding: 40px 16px !important; }
+    .erro { padding: 14px 18px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); border-radius: 10px; color: var(--danger); font-size: .85rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .btn-rec { padding: 6px 14px; background: var(--danger); color: #fff; border: none; border-radius: 6px; font-size: .78rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-rec:hover { background: var(--danger-hover); }
   `]
 })
 export class ListagemFuncionarioComponent implements OnInit {
