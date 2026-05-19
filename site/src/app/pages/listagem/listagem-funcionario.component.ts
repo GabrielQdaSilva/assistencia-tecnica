@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { FuncionariosService } from '../../core/services/funcionarios.service';
 import { Funcionario } from '../../core/types/types';
 
@@ -89,10 +89,8 @@ import { Funcionario } from '../../core/types/types';
 export class ListagemFuncionarioComponent implements OnInit {
   lista: Funcionario[] = [];
   erro = '';
-  constructor(private service: FuncionariosService, private route: ActivatedRoute) {}
-  ngOnInit() {
-    this.route.url.subscribe(() => this.carregar());
-  }
+  constructor(private service: FuncionariosService) {}
+  ngOnInit() { this.carregar(); }
   carregar() {
     this.erro = '';
     this.service.listar().subscribe({

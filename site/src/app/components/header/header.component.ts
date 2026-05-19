@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -18,14 +18,14 @@ import { RouterModule } from '@angular/router';
             <div class="dropdown-content">
               <div class="dropdown-group">
                 <span class="dropdown-label">Clientes</span>
-                <a routerLink="/clientes" routerLinkActive="active">Listar</a>
+                <a (click)="listar('/clientes')" routerLinkActive="active">Listar</a>
                 <a routerLink="/clientes/cadastrar" routerLinkActive="active">Cadastrar</a>
                 <a routerLink="/clientes/consultar" routerLinkActive="active">Consultar</a>
               </div>
               <div class="dropdown-divider"></div>
               <div class="dropdown-group">
                 <span class="dropdown-label">Funcionários</span>
-                <a routerLink="/funcionarios" routerLinkActive="active">Listar</a>
+                <a (click)="listar('/funcionarios')" routerLinkActive="active">Listar</a>
                 <a routerLink="/funcionarios/cadastrar" routerLinkActive="active">Cadastrar</a>
                 <a routerLink="/funcionarios/consultar" routerLinkActive="active">Consultar</a>
               </div>
@@ -81,7 +81,7 @@ import { RouterModule } from '@angular/router';
       display: block;
       padding: 9px 14px;
       color: var(--text-muted); text-decoration: none;
-      font-size: .85rem; border-radius: 6px;
+      font-size: .85rem; border-radius: 6px; cursor: pointer;
       transition: all .15s;
     }
     .dropdown-content a:hover { background: var(--surface-hover); color: var(--text); }
@@ -96,4 +96,10 @@ import { RouterModule } from '@angular/router';
     .dropdown:hover .dropdown-content { display: block; }
   `]
 })
-export class HeaderComponent {}
+export class HeaderComponent {
+  constructor(private router: Router) {}
+
+  listar(path: string) {
+    this.router.navigate([path], { queryParams: { _: Date.now() }, replaceUrl: true });
+  }
+}
