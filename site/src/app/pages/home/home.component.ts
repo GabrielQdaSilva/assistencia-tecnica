@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -6,6 +6,10 @@ import { FuncionariosCrudComponent } from '../../components/crud/funcionarios-cr
 import { ClientesCrudComponent } from '../../components/crud/clientes-crud.component';
 import { EquipamentosCrudComponent } from '../../components/crud/equipamentos-crud.component';
 import { EstoqueCrudComponent } from '../../components/crud/estoque-crud.component';
+import { OrdensService } from '../../core/services/ordens.service';
+import { ClientesService } from '../../core/services/clientes.service';
+import { EquipamentosService } from '../../core/services/equipamentos.service';
+import { OrdemServico } from '../../core/types/types';
 
 @Component({
   selector: 'app-home',
@@ -35,10 +39,22 @@ import { EstoqueCrudComponent } from '../../components/crud/estoque-crud.compone
       <section class="stats">
         <div class="section-inner">
           <div class="stats-grid">
-            <div class="stat-item"><span class="stat-num">+500</span><span class="stat-label">Aparelhos Consertados</span></div>
-            <div class="stat-item"><span class="stat-num">Garantia</span><span class="stat-label">De até 3 meses</span></div>
-            <div class="stat-item"><span class="stat-num">Orçamento</span><span class="stat-label">Sem compromisso</span></div>
-            <div class="stat-item"><span class="stat-num">Rápido</span><span class="stat-label">Até 48h</span></div>
+            <div class="stat-item stat-dynamic">
+              <span class="stat-num">{{ stats.totalOS }}</span>
+              <span class="stat-label">Ordens de Serviço</span>
+            </div>
+            <div class="stat-item stat-dynamic">
+              <span class="stat-num">{{ stats.clientesAtivos }}</span>
+              <span class="stat-label">Clientes Ativos</span>
+            </div>
+            <div class="stat-item stat-dynamic">
+              <span class="stat-num">{{ stats.equipamentos }}</span>
+              <span class="stat-label">Equipamentos</span>
+            </div>
+            <div class="stat-item stat-dynamic">
+              <span class="stat-num">R$ {{ stats.receita }}</span>
+              <span class="stat-label">Receita Total</span>
+            </div>
           </div>
         </div>
       </section>
@@ -330,14 +346,21 @@ import { EstoqueCrudComponent } from '../../components/crud/estoque-crud.compone
     .btn-primary-lg:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,.35); }
 
     .stats {
-      padding: 32px 24px; background: var(--surface);
+      padding: 36px 24px; background: var(--surface);
       border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
     .stat-item { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
     .stat-num { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
     .stat-label { font-size: .8rem; color: var(--text-muted); }
-    @media (max-width: 500px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stat-dynamic {
+      padding: 16px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(59,130,246,.04), rgba(99,102,241,.02));
+      border: 1px solid rgba(59,130,246,.08);
+      transition: all .3s;
+    }
+    .stat-dynamic:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(99,102,241,.04)); }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .section { padding: 96px 24px; }
     .section:nth-child(even) { background: var(--surface); }
@@ -553,8 +576,40 @@ import { EstoqueCrudComponent } from '../../components/crud/estoque-crud.compone
     .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; text-align: center; font-size: .82rem; color: var(--text-muted); }
   `]
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   activeTab = 'funcionarios';
+
+  stats = {
+    totalOS: 0,
+    clientesAtivos: 0,
+    equipamentos: 0,
+    receita: 0
+  };
+
+  constructor(
+    private ordensService: OrdensService,
+    private clientesService: ClientesService,
+    private equipamentosService: EquipamentosService
+  ) {}
+
+  ngOnInit() {
+    this.carregarStats();
+  }
+
+  private carregarStats() {
+    this.ordensService.listar().subscribe(ordens => {
+      this.stats.totalOS = ordens.length;
+      this.stats.receita = ordens
+        .filter(o => o.status === 'Entregue' && o.valorTotal)
+        .reduce((acc, o) => acc + (o.valorTotal ?? 0), 0);
+    });
+    this.clientesService.listar().subscribe(c => {
+      this.stats.clientesAtivos = c.filter(c => c.ativo).length;
+    });
+    this.equipamentosService.listar().subscribe(e => {
+      this.stats.equipamentos = e.length;
+    });
+  }
 
   scrollPara(id: string) {
     const el = document.getElementById(id);
