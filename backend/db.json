@@ -15,11 +15,80 @@
       "email": "maria@email.com"
     },
     {
-      "nome": "Teste",
-      "cargo": "Dev",
-      "telefone": "111",
-      "email": "t@t.com",
+      "nome": "Fulano",
+      "cargo": "Montador",
+      "telefone": "11222333444",
+      "email": "email@email.com",
       "id": 3
+    },
+    {
+      "nome": "Beltrano",
+      "cargo": "Técnico",
+      "telefone": "1122232233223",
+      "email": "email|@email.com",
+      "id": 4
+    }
+  ],
+  "ordens": [
+    {
+      "id": 1,
+      "tecnicoId": 1,
+      "tecnicoNome": "João Silva",
+      "clienteId": 1,
+      "clienteNome": "Carlos Santos",
+      "aparelho": "iPhone 12",
+      "tipoAparelho": "Smartphone",
+      "defeito": "Tela quebrada - display não acende",
+      "status": "Em Reparo",
+      "dataEntrada": "2026-05-20",
+      "valorServico": 120,
+      "valorPecas": 179,
+      "valorTotal": 299,
+      "observacoes": "Aguardando chegar a tela"
+    },
+    {
+      "id": 2,
+      "tecnicoId": 1,
+      "tecnicoNome": "João Silva",
+      "clienteId": 2,
+      "clienteNome": "Ana Oliveira",
+      "aparelho": "Notebook Dell Inspiron",
+      "tipoAparelho": "Notebook",
+      "defeito": "Não liga, led de carga acende mas não dá boot",
+      "status": "Diagnosticando",
+      "dataEntrada": "2026-05-22",
+      "valorServico": 80,
+      "valorTotal": 80,
+      "observacoes": "Suspeita de falha na placa-mãe"
+    },
+    {
+      "id": 3,
+      "tecnicoId": 4,
+      "tecnicoNome": "Beltrano",
+      "clienteId": 1,
+      "clienteNome": "Carlos Santos",
+      "aparelho": "Samsung Galaxy S23",
+      "tipoAparelho": "Smartphone",
+      "defeito": "Bateria viciada - não carrega acima de 15%",
+      "status": "Aguardando Peças",
+      "dataEntrada": "2026-05-18",
+      "valorServico": 80,
+      "valorPecas": 149,
+      "valorTotal": 229,
+      "observacoes": ""
+    },
+    {
+      "id": 4,
+      "tecnicoId": 4,
+      "tecnicoNome": "Beltrano",
+      "clienteId": 2,
+      "clienteNome": "Ana Oliveira",
+      "aparelho": "PS5",
+      "tipoAparelho": "Console",
+      "defeito": "Superaquecimento - desliga após 30min de uso",
+      "status": "Recebido",
+      "dataEntrada": "2026-05-23",
+      "observacoes": ""
     }
   ],
   "clientes": [

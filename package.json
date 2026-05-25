@@ -1,15 +1,12 @@
 {
   "name": "assistencia-tecnica",
-  "version": "1.0.0",
   "private": true,
   "scripts": {
     "backend": "node backend/server.js",
     "frontend": "cd site && npx ng serve --open",
-    "dev": "bash dev.sh",
-    "start": "bash dev.sh"
+    "dev": "bash dev.sh"
   },
   "dependencies": {
-    "@angular/cli": "^19.2.4",
     "json-server": "0.17.4"
   }
 }

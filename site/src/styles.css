@@ -1,32 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
+  --primary: #3B82F6;
+  --primary-hover: #2563eb;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --success: #22c55e;
   --bg: #0a0a0f;
   --surface: #13131a;
   --surface-hover: #1a1a24;
   --border: #1e1e2a;
   --text: #e8e4da;
   --text-muted: #6B7280;
-  --primary: #3B82F6;
-  --primary-hover: #2563eb;
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
-  --success: #22c55e;
-  --success-hover: #16a34a;
   --radius: 10px;
   --shadow: 0 2px 8px rgba(0,0,0,.25);
 }
-
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px; line-height: 1.5;
-  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
-  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 ::selection { background: var(--primary); color: #fff; }
-img { max-width: 100%; height: auto; display: block; }
-a { color: var(--primary); text-decoration: none; }
-a:hover { color: var(--primary-hover); }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--primary); }
+input, button, textarea, select { font-family: inherit; }

@@ -1,10 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { FuncionariosService } from '../../core/services/funcionarios.service';
+import { ClientesService } from '../../core/services/clientes.service';
+import { Funcionario, Cliente } from '../../core/types/types';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="landing">
 
@@ -17,7 +22,7 @@ import { RouterModule } from '@angular/router';
           <p class="hero-sub">Seu dispositivo funcionando como novo. Rapidez e qualidade em cada reparo.</p>
           <p class="hero-desc">Smartphones, notebooks, desktops, tablets e muito mais. Orçamento sem compromisso.</p>
           <div class="hero-actions">
-            <a class="btn-primary-lg" routerLink="/funcionarios">
+            <a class="btn-primary-lg" routerLink="/area-tecnico">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               Área do Técnico
             </a>
@@ -38,7 +43,7 @@ import { RouterModule } from '@angular/router';
       </section>
 
       <!-- Services -->
-      <section class="section">
+      <section class="section" id="servicos">
         <div class="section-inner">
           <div class="section-header">
             <h2>Nossos Serviços</h2>
@@ -98,7 +103,7 @@ import { RouterModule } from '@angular/router';
       </section>
 
       <!-- Price Table -->
-      <section class="section price-section">
+      <section class="section price-section" id="precos">
         <div class="section-inner">
           <div class="section-header">
             <h2>Tabela de Preços</h2>
@@ -200,6 +205,241 @@ import { RouterModule } from '@angular/router';
         </div>
       </section>
 
+      <!-- Gerenciamento CRUD -->
+      <section class="section crud-section" id="gerenciamento">
+        <div class="section-inner">
+          <div class="section-header">
+            <h2>Gerenciamento</h2>
+            <p>Cadastre, consulte, altere e exclua registros de funcionários e clientes</p>
+          </div>
+
+          <div class="tabs">
+            <button class="tab" [class.active]="activeTab === 'funcionarios'" (click)="activeTab = 'funcionarios'">Funcionários</button>
+            <button class="tab" [class.active]="activeTab === 'clientes'" (click)="activeTab = 'clientes'">Clientes</button>
+          </div>
+
+          @if (activeTab === 'funcionarios') {
+            <div class="crud-content">
+              <div class="crud-bar">
+                <button class="btn-primary" (click)="showAddForm = !showAddForm">
+                  {{ showAddForm ? 'Cancelar' : '+ Novo Funcionário' }}
+                </button>
+              </div>
+
+              @if (showAddForm) {
+                <div class="form-card">
+                  <h3>Novo Funcionário</h3>
+                  <div class="form-grid">
+                    <input [(ngModel)]="funcionarioForm.nome" placeholder="Nome" class="inp"/>
+                    <input [(ngModel)]="funcionarioForm.cargo" placeholder="Cargo" class="inp"/>
+                    <input [(ngModel)]="funcionarioForm.telefone" placeholder="Telefone" class="inp"/>
+                    <input [(ngModel)]="funcionarioForm.email" placeholder="Email" class="inp"/>
+                  </div>
+                  <button class="btn-primary" [disabled]="fLoading" (click)="incluirFuncionario()">
+                    @if (fLoading) { Salvando... } @else { Salvar }
+                  </button>
+                </div>
+              }
+
+              @if (funcionarioEditId !== null) {
+                <div class="form-card">
+                  <h3>Editar Funcionário #{{ funcionarioEditId }}</h3>
+                  <div class="form-grid">
+                    <input [(ngModel)]="funcionarioEditForm.nome" placeholder="Nome" class="inp"/>
+                    <input [(ngModel)]="funcionarioEditForm.cargo" placeholder="Cargo" class="inp"/>
+                    <input [(ngModel)]="funcionarioEditForm.telefone" placeholder="Telefone" class="inp"/>
+                    <input [(ngModel)]="funcionarioEditForm.email" placeholder="Email" class="inp"/>
+                  </div>
+                  <div class="form-actions">
+                    <button class="btn-primary" [disabled]="fLoading" (click)="editarFuncionario()">Atualizar</button>
+                    <button class="btn-sec" (click)="cancelarEdicaoFuncionario()">Cancelar</button>
+                  </div>
+                </div>
+              }
+
+              <div class="consult-card">
+                <h3>Consultar</h3>
+                <div class="scope-buttons">
+                  <button class="scope-btn" [class.active]="fCampo === 'id'" (click)="fCampo='id'">ID</button>
+                  <button class="scope-btn" [class.active]="fCampo === 'nome'" (click)="fCampo='nome'">Nome</button>
+                  <button class="scope-btn" [class.active]="fCampo === 'cargo'" (click)="fCampo='cargo'">Cargo</button>
+                  <button class="scope-btn" [class.active]="fCampo === 'email'" (click)="fCampo='email'">Email</button>
+                  <button class="scope-btn" [class.active]="fCampo === 'telefone'" (click)="fCampo='telefone'">Telefone</button>
+                </div>
+                <div class="consult-row">
+                  <input [(ngModel)]="fValor" [placeholder]="'Buscar por ' + fCampo" class="inp"/>
+                  <button class="btn-primary" [disabled]="fSearchLoading" (click)="consultarFuncionario()">
+                    @if (fSearchLoading) { Buscando... } @else { Buscar }
+                  </button>
+                </div>
+                @if (fSearchLoading) {
+                  <p class="loading">Buscando...</p>
+                }
+                @if (fResultado && !fSearchLoading) {
+                  <div class="consult-result">
+                    <p><strong>ID:</strong> {{ fResultado.id }}</p>
+                    <p><strong>Nome:</strong> {{ fResultado.nome }}</p>
+                    <p><strong>Cargo:</strong> {{ fResultado.cargo }}</p>
+                    <p><strong>Telefone:</strong> {{ fResultado.telefone }}</p>
+                    <p><strong>Email:</strong> {{ fResultado.email }}</p>
+                  </div>
+                }
+                @if (fErro) {
+                  <p class="err">{{ fErro }}</p>
+                }
+              </div>
+
+              <div class="table-wrapper">
+                @if (fListLoading) {
+                  <p class="empty">Carregando...</p>
+                } @else if (funcionarios.length === 0) {
+                  <p class="empty">Nenhum funcionário cadastrado.</p>
+                } @else {
+                  <table>
+                    <thead>
+                      <tr><th>ID</th><th>Nome</th><th>Cargo</th><th>Telefone</th><th>Email</th><th>Ações</th></tr>
+                    </thead>
+                    <tbody>
+                      @for (f of funcionarios; track f.id) {
+                        <tr>
+                          <td>{{ f.id }}</td>
+                          <td>{{ f.nome }}</td>
+                          <td>{{ f.cargo }}</td>
+                          <td>{{ f.telefone }}</td>
+                          <td>{{ f.email }}</td>
+                          <td class="actions">
+                            <button class="btn-sm btn-blue" (click)="iniciarEdicaoFuncionario(f)">Editar</button>
+                            <button class="btn-sm btn-red" (click)="excluirFuncionario(f)">Excluir</button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+
+              @if (successMsg) {
+                <p class="success">{{ successMsg }}</p>
+              }
+
+              @if (funcionarioErro) {
+                <p class="err">{{ funcionarioErro }}</p>
+              }
+            </div>
+          }
+
+          @if (activeTab === 'clientes') {
+            <div class="crud-content">
+              <div class="crud-bar">
+                <button class="btn-primary" (click)="showAddFormCliente = !showAddFormCliente">
+                  {{ showAddFormCliente ? 'Cancelar' : '+ Novo Cliente' }}
+                </button>
+              </div>
+
+              @if (showAddFormCliente) {
+                <div class="form-card">
+                  <h3>Novo Cliente</h3>
+                  <div class="form-grid">
+                    <input [(ngModel)]="clienteForm.nome" placeholder="Nome" class="inp"/>
+                    <input [(ngModel)]="clienteForm.email" placeholder="Email" class="inp"/>
+                    <input [(ngModel)]="clienteForm.telefone" placeholder="Telefone" class="inp"/>
+                    <input [(ngModel)]="clienteForm.endereco" placeholder="Endereço" class="inp"/>
+                  </div>
+                  <button class="btn-primary" [disabled]="cLoading" (click)="incluirCliente()">
+                    @if (cLoading) { Salvando... } @else { Salvar }
+                  </button>
+                </div>
+              }
+
+              @if (clienteEditId !== null) {
+                <div class="form-card">
+                  <h3>Editar Cliente #{{ clienteEditId }}</h3>
+                  <div class="form-grid">
+                    <input [(ngModel)]="clienteEditForm.nome" placeholder="Nome" class="inp"/>
+                    <input [(ngModel)]="clienteEditForm.email" placeholder="Email" class="inp"/>
+                    <input [(ngModel)]="clienteEditForm.telefone" placeholder="Telefone" class="inp"/>
+                    <input [(ngModel)]="clienteEditForm.endereco" placeholder="Endereço" class="inp"/>
+                  </div>
+                  <div class="form-actions">
+                    <button class="btn-primary" [disabled]="cLoading" (click)="editarCliente()">Atualizar</button>
+                    <button class="btn-sec" (click)="cancelarEdicaoCliente()">Cancelar</button>
+                  </div>
+                </div>
+              }
+
+              <div class="consult-card">
+                <h3>Consultar</h3>
+                <div class="scope-buttons">
+                  <button class="scope-btn" [class.active]="cCampo === 'id'" (click)="cCampo='id'">ID</button>
+                  <button class="scope-btn" [class.active]="cCampo === 'nome'" (click)="cCampo='nome'">Nome</button>
+                  <button class="scope-btn" [class.active]="cCampo === 'email'" (click)="cCampo='email'">Email</button>
+                  <button class="scope-btn" [class.active]="cCampo === 'telefone'" (click)="cCampo='telefone'">Telefone</button>
+                  <button class="scope-btn" [class.active]="cCampo === 'endereco'" (click)="cCampo='endereco'">Endereço</button>
+                </div>
+                <div class="consult-row">
+                  <input [(ngModel)]="cValor" [placeholder]="'Buscar por ' + cCampo" class="inp"/>
+                  <button class="btn-primary" [disabled]="cSearchLoading" (click)="consultarCliente()">
+                    @if (cSearchLoading) { Buscando... } @else { Buscar }
+                  </button>
+                </div>
+                @if (cSearchLoading) {
+                  <p class="loading">Buscando...</p>
+                }
+                @if (cResultado && !cSearchLoading) {
+                  <div class="consult-result">
+                    <p><strong>ID:</strong> {{ cResultado.id }}</p>
+                    <p><strong>Nome:</strong> {{ cResultado.nome }}</p>
+                    <p><strong>Email:</strong> {{ cResultado.email }}</p>
+                    <p><strong>Telefone:</strong> {{ cResultado.telefone }}</p>
+                    <p><strong>Endereço:</strong> {{ cResultado.endereco }}</p>
+                  </div>
+                }
+                @if (cErro) {
+                  <p class="err">{{ cErro }}</p>
+                }
+              </div>
+
+              <div class="table-wrapper">
+                @if (cListLoading) {
+                  <p class="empty">Carregando...</p>
+                } @else if (clientes.length === 0) {
+                  <p class="empty">Nenhum cliente cadastrado.</p>
+                } @else {
+                  <table>
+                    <thead>
+                      <tr><th>ID</th><th>Nome</th><th>Email</th><th>Telefone</th><th>Endereço</th><th>Ações</th></tr>
+                    </thead>
+                    <tbody>
+                      @for (c of clientes; track c.id) {
+                        <tr>
+                          <td>{{ c.id }}</td>
+                          <td>{{ c.nome }}</td>
+                          <td>{{ c.email }}</td>
+                          <td>{{ c.telefone }}</td>
+                          <td>{{ c.endereco }}</td>
+                          <td class="actions">
+                            <button class="btn-sm btn-blue" (click)="iniciarEdicaoCliente(c)">Editar</button>
+                            <button class="btn-sm btn-red" (click)="excluirCliente(c)">Excluir</button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+
+              @if (successMsg) {
+                <p class="success">{{ successMsg }}</p>
+              }
+
+              @if (clienteErro) {
+                <p class="err">{{ clienteErro }}</p>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
       <!-- Footer -->
       <footer class="footer">
         <div class="section-inner">
@@ -221,23 +461,22 @@ import { RouterModule } from '@angular/router';
             </div>
             <div>
               <h4>Serviços</h4>
-              <a href="#">Smartphones & Tablets</a>
-              <a href="#">Notebooks</a>
-              <a href="#">Desktops & PCs</a>
-              <a href="#">Consoles</a>
-              <a href="#">TVs & Monitores</a>
+              <a (click)="scrollPara('servicos')">Smartphones & Tablets</a>
+              <a (click)="scrollPara('servicos')">Notebooks</a>
+              <a (click)="scrollPara('servicos')">Desktops & PCs</a>
+              <a (click)="scrollPara('servicos')">Consoles</a>
+              <a (click)="scrollPara('servicos')">TVs & Monitores</a>
             </div>
             <div>
-              <h4>Links</h4>
-              <a routerLink="/funcionarios">Funcionários</a>
-              <a routerLink="/clientes">Clientes</a>
-              <a routerLink="/funcionarios/cadastrar">Cadastrar Funcionário</a>
-              <a routerLink="/clientes/cadastrar">Cadastrar Cliente</a>
+              <h4>Gerenciamento</h4>
+              <a routerLink="/area-tecnico">Área do Técnico</a>
+              <a (click)="scrollPara('gerenciamento'); activeTab='funcionarios'">Funcionários</a>
+              <a (click)="scrollPara('gerenciamento'); activeTab='clientes'">Clientes</a>
             </div>
             <div>
               <h4>Contato</h4>
               <span class="footer-contact">(11) 99999-9999</span>
-              <span class="footer-contact">contato@assistenciatecnica.com.br</span>
+              <span class="footer-contact">contato&#64;assistenciatecnica.com.br</span>
               <span class="footer-hours-title">Horário</span>
               <span>Seg a Sex: 09h — 18h</span>
               <span>Sáb: 09h — 13h</span>
@@ -256,94 +495,513 @@ import { RouterModule } from '@angular/router';
 
     .hero {
       position: relative; overflow: hidden;
-      padding: 100px 24px 80px; text-align: center;
+      padding: 120px 24px 100px; text-align: center;
+      background: linear-gradient(180deg, rgba(59,130,246,.04) 0%, transparent 100%);
     }
     .hero-bg {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,.08) 0%, transparent 70%);
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(59,130,246,.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(59,130,246,.06) 0%, transparent 50%);
       pointer-events: none;
     }
-    .hero-content { position: relative; max-width: 680px; margin: 0 auto; }
+    .hero-content { position: relative; max-width: 720px; margin: 0 auto; }
     .hero-badge {
-      display: inline-block; padding: 6px 16px; margin-bottom: 20px;
-      background: rgba(59,130,246,.1); color: var(--primary);
-      font-size: .8rem; font-weight: 600; border-radius: 20px;
-      letter-spacing: .03em;
+      display: inline-block; padding: 8px 20px; margin-bottom: 24px;
+      background: linear-gradient(135deg, rgba(59,130,246,.15), rgba(59,130,246,.05));
+      color: var(--primary); font-size: .8rem; font-weight: 600;
+      border-radius: 20px; letter-spacing: .03em;
+      border: 1px solid rgba(59,130,246,.15);
     }
-    h1 { font-size: 2.5rem; font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -.02em; }
-    .hero-sub { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 8px; }
-    .hero-desc { font-size: .95rem; color: var(--text-muted); opacity: .8; margin-bottom: 36px; }
+    h1 { font-size: 3rem; font-weight: 800; color: var(--text); margin-bottom: 16px; letter-spacing: -.03em; line-height: 1.1; }
+    .hero-sub { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 8px; }
+    .hero-desc { font-size: 1rem; color: var(--text-muted); opacity: .75; margin-bottom: 40px; }
     .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-    .btn-primary-lg, .btn-secondary-lg {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 28px; font-size: .95rem; font-weight: 600;
-      border-radius: 10px; text-decoration: none; transition: all .15s;
+    .btn-primary-lg {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 32px; font-size: 1rem; font-weight: 600;
+      border-radius: 12px; text-decoration: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: #fff; border: none;
+      transition: all .25s; box-shadow: 0 4px 20px rgba(59,130,246,.25);
     }
-    .btn-primary-lg { background: var(--primary); color: #fff; }
-    .btn-primary-lg:hover { background: var(--primary-hover); color: #fff; transform: translateY(-1px); }
-    .btn-secondary-lg { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
-    .btn-secondary-lg:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+    .btn-primary-lg:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,.35); }
 
-    .stats { padding: 32px 24px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .stats {
+      padding: 32px 24px; background: var(--surface);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
-    .stat-item { display: flex; flex-direction: column; gap: 4px; }
-    .stat-num { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    .stat-item { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+    .stat-num { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
     .stat-label { font-size: .8rem; color: var(--text-muted); }
     @media (max-width: 500px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 
-    .section { padding: 80px 24px; }
+    .section { padding: 96px 24px; }
     .section:nth-child(even) { background: var(--surface); }
     .section-inner { max-width: 1120px; margin: 0 auto; }
-    .section-header { text-align: center; margin-bottom: 48px; }
-    .section-header h2 { font-size: 1.75rem; font-weight: 800; color: var(--text); margin-bottom: 10px; }
-    .section-header p { color: var(--text-muted); font-size: 1rem; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header h2 { font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -.02em; }
+    .section-header p { color: var(--text-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
 
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-    .service-card { padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: all .15s; }
-    .service-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
-    .card-img { height: 100px; display: flex; align-items: center; justify-content: center; }
-    .service-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); padding: 16px 20px 8px; }
-    .service-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.5; padding: 0 20px; }
-    .service-price { display: block; padding: 12px 20px 18px; font-size: .9rem; font-weight: 700; color: var(--primary); }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .service-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+      position: relative;
+    }
+    .service-card::before {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 16px; opacity: 0;
+      background: linear-gradient(180deg, rgba(59,130,246,.03) 0%, transparent 100%);
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+    .service-card:hover {
+      border-color: rgba(59,130,246,.3); transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.3);
+    }
+    .service-card:hover::before { opacity: 1; }
+    .card-img { height: 110px; display: flex; align-items: center; justify-content: center; transition: transform .3s; }
+    .service-card:hover .card-img { transform: scale(1.05); }
+    .service-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); padding: 20px 24px 8px; }
+    .service-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.6; padding: 0 24px; }
+    .service-price { display: block; padding: 14px 24px 20px; font-size: .95rem; font-weight: 700; color: var(--primary); }
 
     .price-section { background: var(--surface); }
-    .price-table-wrap { overflow-x: auto; max-width: 700px; margin: 0 auto; }
-    .price-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
-    .price-table thead tr { background: rgba(59,130,246,.1); }
-    .price-table th { color: var(--text); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; padding: 14px 16px; text-align: left; }
-    .price-table td { padding: 12px 16px; color: var(--text); border-bottom: 1px solid var(--border); }
+    .price-table-wrap { overflow-x: auto; max-width: 720px; margin: 0 auto; }
+    .price-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .88rem; overflow: hidden; border-radius: 12px; border: 1px solid var(--border); }
+    .price-table thead tr { background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(59,130,246,.04)); }
+    .price-table th { color: var(--text); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; padding: 16px 20px; text-align: left; }
+    .price-table td { padding: 14px 20px; color: var(--text); border-top: 1px solid var(--border); }
+    .price-table tbody tr { transition: background .2s; }
     .price-table tbody tr:hover { background: var(--surface-hover); }
-    .price-table tbody tr:last-child td { border-bottom: none; }
     .price-val { font-weight: 700; color: var(--primary); white-space: nowrap; text-align: right; }
-    .price-note { text-align: center; color: var(--text-muted); font-size: .8rem; margin-top: 20px; }
+    .price-note { text-align: center; color: var(--text-muted); font-size: .8rem; margin-top: 24px; }
 
-    .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
-    .how-step { text-align: center; padding: 32px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; position: relative; }
-    .how-num { width: 36px; height: 36px; margin: 0 auto 16px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .9rem; font-weight: 700; }
-    .how-icon { margin-bottom: 12px; }
-    .how-step h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-    .how-step p { font-size: .85rem; color: var(--text-muted); line-height: 1.5; }
+    .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+    .how-step {
+      text-align: center; padding: 40px 28px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; position: relative;
+      transition: all .3s;
+    }
+    .how-step:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); }
+    .how-num {
+      width: 44px; height: 44px; margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: #fff; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 700;
+      box-shadow: 0 4px 12px rgba(59,130,246,.2);
+    }
+    .how-icon { margin-bottom: 16px; }
+    .how-step h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .how-step p { font-size: .87rem; color: var(--text-muted); line-height: 1.6; }
 
-    .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .why-card { text-align: center; padding: 28px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-    .why-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
-    .why-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .why-card p { font-size: .84rem; color: var(--text-muted); line-height: 1.5; }
+    .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+    .why-card {
+      text-align: center; padding: 36px 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; transition: all .3s;
+    }
+    .why-card:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); }
+    .why-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; transition: transform .3s; }
+    .why-card:hover .why-icon { transform: scale(1.1); }
+    .why-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .why-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.6; }
 
-    .footer { padding: 48px 24px 32px; background: var(--surface); border-top: 1px solid var(--border); }
-    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 32px; margin-bottom: 32px; }
-    .footer-logo { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+    .crud-section .section-header { margin-bottom: 32px; }
+
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 28px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 4px; overflow: hidden;
+    }
+    .tab {
+      flex: 1; padding: 12px 24px;
+      background: transparent; color: var(--text-muted);
+      border: none; cursor: pointer; font-size: .9rem; font-weight: 600;
+      border-radius: 8px; transition: all .25s;
+    }
+    .tab:hover { color: var(--text); background: var(--surface-hover); }
+    .tab.active { color: #fff; background: var(--primary); }
+
+    .crud-content { display: flex; flex-direction: column; gap: 24px; }
+    .crud-bar { display: flex; gap: 8px; }
+    .form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      border-left: 3px solid var(--primary);
+    }
+    .form-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .form-actions { display: flex; gap: 10px; }
+
+    .consult-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      border-left: 3px solid rgba(59,130,246,.4);
+    }
+    .consult-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .scope-buttons { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .scope-btn {
+      padding: 7px 18px; font-size: .8rem; font-weight: 600;
+      background: var(--surface-hover); color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: 20px;
+      cursor: pointer; transition: all .2s;
+    }
+    .scope-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .scope-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .consult-row { display: flex; gap: 10px; align-items: center; }
+    .consult-result {
+      margin-top: 14px; background: var(--surface-hover);
+      border-radius: 8px; padding: 16px 20px;
+      border: 1px solid var(--border);
+    }
+    .consult-result p { margin-bottom: 6px; font-size: .9rem; }
+    .loading { margin-top: 8px; font-size: .85rem; color: var(--text-muted); font-style: italic; }
+
+    .table-wrapper {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 18px; text-align: left; font-size: .88rem; }
+    th {
+      background: var(--surface-hover); font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      font-size: .72rem; letter-spacing: .6px;
+      border-bottom: 1px solid var(--border);
+    }
+    td { color: var(--text); border-bottom: 1px solid var(--border); }
+    tbody tr { transition: background .15s; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(59,130,246,.03); }
+    .actions { display: flex; gap: 8px; }
+    .empty { padding: 48px; text-align: center; color: var(--text-muted); }
+    .err { color: var(--danger); font-size: .9rem; padding: 10px 0; display: flex; align-items: center; gap: 6px; }
+    .err::before { content: '⚠'; }
+    .success {
+      color: var(--success); font-size: .9rem; padding: 10px 16px; font-weight: 500;
+      background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.15);
+      border-radius: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .success::before { content: '✓'; font-weight: 700; }
+
+    .inp {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 11px 16px;
+      color: var(--text); font-size: .9rem;
+      outline: none; transition: all .2s; width: 100%;
+    }
+    .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; background: var(--primary); color: #fff;
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-sec {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; background: var(--surface-hover); color: var(--text);
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 500;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .btn-sec:hover { background: var(--border); }
+    .btn-sm {
+      padding: 7px 16px; font-size: .8rem; font-weight: 600;
+      border: none; border-radius: 6px; cursor: pointer; transition: all .2s;
+    }
+    .btn-blue { background: var(--primary); color: #fff; }
+    .btn-blue:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-red { background: var(--danger); color: #fff; }
+    .btn-red:hover { background: var(--danger-hover); transform: translateY(-1px); }
+
+    .footer {
+      padding: 60px 24px 36px;
+      background: linear-gradient(180deg, var(--surface) 0%, #0d0d14 100%);
+      border-top: 1px solid var(--border);
+    }
+    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 40px; margin-bottom: 36px; }
+    .footer-logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 16px; }
     .footer-logo .accent { color: var(--primary); }
-    .footer-desc { font-size: .85rem; color: var(--text-muted); line-height: 1.5; max-width: 260px; }
-    .footer-social { display: flex; gap: 8px; margin-top: 16px; }
-    .footer-social a { width: 36px; height: 36px; border-radius: 8px; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all .15s; }
-    .footer-social a:hover { background: var(--primary); color: #fff; }
-    .footer h4 { font-size: .82rem; font-weight: 700; color: var(--text); margin-bottom: 14px; text-transform: uppercase; letter-spacing: .05em; }
-    .footer a, .footer span { display: block; font-size: .85rem; color: var(--text-muted); padding: 3px 0; text-decoration: none; }
+    .footer-desc { font-size: .87rem; color: var(--text-muted); line-height: 1.6; max-width: 280px; }
+    .footer-social { display: flex; gap: 10px; margin-top: 20px; }
+    .footer-social a { width: 40px; height: 40px; border-radius: 10px; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all .2s; cursor: pointer; }
+    .footer-social a:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+    .footer h4 { font-size: .82rem; font-weight: 700; color: var(--text); margin-bottom: 16px; text-transform: uppercase; letter-spacing: .08em; }
+    .footer a, .footer span { display: block; font-size: .87rem; color: var(--text-muted); padding: 4px 0; text-decoration: none; cursor: pointer; transition: color .2s; }
     .footer a:hover { color: var(--primary); }
     .footer-contact { font-weight: 600; color: var(--text); }
-    .footer-hours-title { font-weight: 600; color: var(--text); margin-top: 12px; }
-    .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; text-align: center; font-size: .82rem; color: var(--text-muted); }
+    .footer-hours-title { font-weight: 600; color: var(--text); margin-top: 16px; display: block; }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; text-align: center; font-size: .82rem; color: var(--text-muted); }
   `]
 })
-export class HomeComponent {}
+export class HomeComponent implements OnInit {
+  activeTab = 'funcionarios';
+
+  funcionarios: Funcionario[] = [];
+  clientes: Cliente[] = [];
+
+  showAddForm = false;
+  funcionarioForm: Funcionario = { nome: '', cargo: '', telefone: '', email: '' };
+  funcionarioEditId: number | null = null;
+  funcionarioEditForm: Funcionario = { nome: '', cargo: '', telefone: '', email: '' };
+  fCampo = 'id';
+  fValor = '';
+  fResultado: Funcionario | null = null;
+  fErro = '';
+  funcionarioErro = '';
+  successMsg = '';
+  fLoading = false;
+  fListLoading = false;
+  fSearchLoading = false;
+
+  showAddFormCliente = false;
+  clienteForm: Cliente = { nome: '', email: '', telefone: '', endereco: '' };
+  clienteEditId: number | null = null;
+  clienteEditForm: Cliente = { nome: '', email: '', telefone: '', endereco: '' };
+  cCampo = 'id';
+  cValor = '';
+  cResultado: Cliente | null = null;
+  cErro = '';
+  clienteErro = '';
+  cLoading = false;
+  cListLoading = false;
+  cSearchLoading = false;
+
+  constructor(
+    private funcionariosService: FuncionariosService,
+    private clientesService: ClientesService
+  ) {}
+
+  ngOnInit() {
+    this.listarFuncionarios();
+    this.listarClientes();
+  }
+
+  private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  private mostrarSucesso(msg: string) {
+    this.successMsg = msg;
+    setTimeout(() => this.successMsg = '', 3000);
+  }
+
+  scrollPara(id: string) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  listarFuncionarios() {
+    this.fListLoading = true;
+    this.funcionariosService.listar().subscribe({
+      next: (data) => { this.funcionarios = data; this.fListLoading = false; },
+      error: () => { this.funcionarioErro = 'Erro ao carregar funcionários.'; this.fListLoading = false; }
+    });
+  }
+
+  incluirFuncionario() {
+    if (!this.funcionarioForm.nome || !this.funcionarioForm.cargo) {
+      this.funcionarioErro = 'Nome e Cargo são obrigatórios.';
+      return;
+    }
+    if (!this.emailRegex.test(this.funcionarioForm.email)) {
+      this.funcionarioErro = 'Email inválido.';
+      return;
+    }
+    this.fLoading = true;
+    this.funcionarioErro = '';
+    this.funcionariosService.incluir(this.funcionarioForm).subscribe({
+      next: () => {
+        this.showAddForm = false;
+        this.funcionarioForm = { nome: '', cargo: '', telefone: '', email: '' };
+        this.fLoading = false;
+        this.mostrarSucesso('Funcionário cadastrado com sucesso.');
+        this.listarFuncionarios();
+      },
+      error: () => { this.funcionarioErro = 'Erro ao incluir funcionário.'; this.fLoading = false; }
+    });
+  }
+
+  iniciarEdicaoFuncionario(f: Funcionario) {
+    this.funcionarioEditId = f.id ?? null;
+    this.funcionarioEditForm = { ...f };
+  }
+
+  editarFuncionario() {
+    if (this.funcionarioEditId === null) return;
+    if (!this.emailRegex.test(this.funcionarioEditForm.email)) {
+      this.funcionarioErro = 'Email inválido.';
+      return;
+    }
+    this.fLoading = true;
+    this.funcionarioErro = '';
+    this.funcionariosService.editar({ ...this.funcionarioEditForm, id: this.funcionarioEditId }).subscribe({
+      next: () => {
+        this.funcionarioEditId = null;
+        this.funcionarioEditForm = { nome: '', cargo: '', telefone: '', email: '' };
+        this.fLoading = false;
+        this.mostrarSucesso('Funcionário atualizado com sucesso.');
+        this.listarFuncionarios();
+      },
+      error: () => { this.funcionarioErro = 'Erro ao editar funcionário.'; this.fLoading = false; }
+    });
+  }
+
+  cancelarEdicaoFuncionario() {
+    this.funcionarioEditId = null;
+    this.funcionarioEditForm = { nome: '', cargo: '', telefone: '', email: '' };
+  }
+
+  excluirFuncionario(f: Funcionario) {
+    if (!confirm(`Excluir funcionário "${f.nome}"?`)) return;
+    this.funcionariosService.excluir(f.id!).subscribe({
+      next: () => {
+        this.mostrarSucesso('Funcionário excluído com sucesso.');
+        this.listarFuncionarios();
+      },
+      error: () => { this.funcionarioErro = 'Erro ao excluir funcionário.'; }
+    });
+  }
+
+  consultarFuncionario() {
+    this.fResultado = null;
+    this.fErro = '';
+    if (!this.fValor) {
+      this.fErro = 'Informe um valor para busca.';
+      return;
+    }
+    if (this.fCampo === 'id') {
+      const id = Number(this.fValor);
+      if (isNaN(id)) { this.fErro = 'ID deve ser um número.'; return; }
+      this.fSearchLoading = true;
+      this.funcionariosService.buscarPorId(id).subscribe({
+        next: (data) => { this.fResultado = data; this.fSearchLoading = false; },
+        error: () => { this.fErro = 'Nenhum funcionário encontrado.'; this.fSearchLoading = false; }
+      });
+    } else {
+      this.fSearchLoading = true;
+      const val = this.fValor.toLowerCase();
+      const campo = this.fCampo as keyof Funcionario;
+      const encontrado = this.funcionarios.find(f => {
+        const v = f[campo];
+        return v !== undefined && String(v).toLowerCase().includes(val);
+      });
+      this.fSearchLoading = false;
+      if (encontrado) {
+        this.fResultado = encontrado;
+      } else {
+        this.fErro = 'Nenhum funcionário encontrado.';
+      }
+    }
+  }
+
+  listarClientes() {
+    this.cListLoading = true;
+    this.clientesService.listar().subscribe({
+      next: (data) => { this.clientes = data; this.cListLoading = false; },
+      error: () => { this.clienteErro = 'Erro ao carregar clientes.'; this.cListLoading = false; }
+    });
+  }
+
+  incluirCliente() {
+    if (!this.clienteForm.nome || !this.clienteForm.email) {
+      this.clienteErro = 'Nome e Email são obrigatórios.';
+      return;
+    }
+    if (!this.emailRegex.test(this.clienteForm.email)) {
+      this.clienteErro = 'Email inválido.';
+      return;
+    }
+    this.cLoading = true;
+    this.clienteErro = '';
+    this.clientesService.incluir(this.clienteForm).subscribe({
+      next: () => {
+        this.showAddFormCliente = false;
+        this.clienteForm = { nome: '', email: '', telefone: '', endereco: '' };
+        this.cLoading = false;
+        this.mostrarSucesso('Cliente cadastrado com sucesso.');
+        this.listarClientes();
+      },
+      error: () => { this.clienteErro = 'Erro ao incluir cliente.'; this.cLoading = false; }
+    });
+  }
+
+  iniciarEdicaoCliente(c: Cliente) {
+    this.clienteEditId = c.id ?? null;
+    this.clienteEditForm = { ...c };
+  }
+
+  editarCliente() {
+    if (this.clienteEditId === null) return;
+    if (!this.emailRegex.test(this.clienteEditForm.email)) {
+      this.clienteErro = 'Email inválido.';
+      return;
+    }
+    this.cLoading = true;
+    this.clienteErro = '';
+    this.clientesService.editar({ ...this.clienteEditForm, id: this.clienteEditId }).subscribe({
+      next: () => {
+        this.clienteEditId = null;
+        this.clienteEditForm = { nome: '', email: '', telefone: '', endereco: '' };
+        this.cLoading = false;
+        this.mostrarSucesso('Cliente atualizado com sucesso.');
+        this.listarClientes();
+      },
+      error: () => { this.clienteErro = 'Erro ao editar cliente.'; this.cLoading = false; }
+    });
+  }
+
+  cancelarEdicaoCliente() {
+    this.clienteEditId = null;
+    this.clienteEditForm = { nome: '', email: '', telefone: '', endereco: '' };
+  }
+
+  excluirCliente(c: Cliente) {
+    if (!confirm(`Excluir cliente "${c.nome}"?`)) return;
+    this.clientesService.excluir(c.id!).subscribe({
+      next: () => {
+        this.mostrarSucesso('Cliente excluído com sucesso.');
+        this.listarClientes();
+      },
+      error: () => { this.clienteErro = 'Erro ao excluir cliente.'; }
+    });
+  }
+
+  consultarCliente() {
+    this.cResultado = null;
+    this.cErro = '';
+    if (!this.cValor) {
+      this.cErro = 'Informe um valor para busca.';
+      return;
+    }
+    if (this.cCampo === 'id') {
+      const id = Number(this.cValor);
+      if (isNaN(id)) { this.cErro = 'ID deve ser um número.'; return; }
+      this.cSearchLoading = true;
+      this.clientesService.buscarPorId(id).subscribe({
+        next: (data) => { this.cResultado = data; this.cSearchLoading = false; },
+        error: () => { this.cErro = 'Nenhum cliente encontrado.'; this.cSearchLoading = false; }
+      });
+    } else {
+      this.cSearchLoading = true;
+      const val = this.cValor.toLowerCase();
+      const campo = this.cCampo as keyof Cliente;
+      const encontrado = this.clientes.find(c => {
+        const v = c[campo];
+        return v !== undefined && String(v).toLowerCase().includes(val);
+      });
+      this.cSearchLoading = false;
+      if (encontrado) {
+        this.cResultado = encontrado;
+      } else {
+        this.cErro = 'Nenhum cliente encontrado.';
+      }
+    }
+  }
+}
