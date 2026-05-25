@@ -53,6 +53,35 @@ import { EstoqueItem } from '../../core/types/types';
       </div>
     }
 
+    <div class="consult-card">
+      <h3>Consultar</h3>
+      <div class="scope-buttons">
+        <button class="scope-btn" [class.active]="campo === 'id'" (click)="campo='id'">ID</button>
+        <button class="scope-btn" [class.active]="campo === 'nome'" (click)="campo='nome'">Nome</button>
+        <button class="scope-btn" [class.active]="campo === 'categoria'" (click)="campo='categoria'">Categoria</button>
+      </div>
+      <div class="consult-row">
+        <input [(ngModel)]="valor" [placeholder]="'Buscar por ' + campo" class="inp"/>
+        <button class="btn-primary" [disabled]="searchLoading" (click)="consultar()">
+          @if (searchLoading) { Buscando... } @else { Buscar }
+        </button>
+      </div>
+      @if (resultado) {
+        <div class="consult-result">
+          <p><strong>ID:</strong> {{ resultado.id }}</p>
+          <p><strong>Nome:</strong> {{ resultado.nome }}</p>
+          <p><strong>Categoria:</strong> {{ resultado.categoria }}</p>
+          <p><strong>Quantidade:</strong> {{ resultado.quantidade }}</p>
+          <p><strong>Estoque Mínimo:</strong> {{ resultado.estoqueMinimo }}</p>
+          <p><strong>Custo:</strong> R$ {{ resultado.valorCusto.toFixed(2) }}</p>
+          <p><strong>Venda:</strong> R$ {{ resultado.valorVenda.toFixed(2) }}</p>
+        </div>
+      }
+      @if (erro) {
+        <p class="err">{{ erro }}</p>
+      }
+    </div>
+
     <div class="table-wrapper">
       @if (listLoading) {
         <p class="empty">Carregando...</p>
@@ -173,12 +202,20 @@ export class EstoqueCrudComponent implements OnInit {
   form: Partial<EstoqueItem> = {};
   loading = false;
   listLoading = false;
+  searchLoading = false;
+  campo = 'id';
+  valor = '';
+  resultado: EstoqueItem | null = null;
+  erro = '';
   sucesso = '';
   erroGeral = '';
 
   get baixoEstoque() { return this.itens.filter(p => p.quantidade <= p.estoqueMinimo); }
 
-  margem(p: EstoqueItem) { return Math.round((1 - p.valorCusto / p.valorVenda) * 100); }
+  margem(p: EstoqueItem) {
+    if (!p.valorVenda) return 0;
+    return Math.round((1 - p.valorCusto / p.valorVenda) * 100);
+  }
 
   ngOnInit() { this.listar(); }
 
@@ -199,6 +236,15 @@ export class EstoqueCrudComponent implements OnInit {
   salvar() {
     if (!this.form.nome || !this.form.categoria || this.form.quantidade == null) {
       this.erroGeral = 'Nome, Categoria e Quantidade são obrigatórios.';
+      return;
+    }
+    if (Number(this.form.quantidade) < 0) {
+      this.erroGeral = 'Quantidade não pode ser negativa.';
+      return;
+    }
+    const dup = this.itens.find(p => p.id !== this.editId && p.nome.toLowerCase() === this.form.nome?.toLowerCase());
+    if (dup) {
+      this.erroGeral = 'Já existe uma peça com este nome.';
       return;
     }
     this.loading = true;
@@ -234,10 +280,30 @@ export class EstoqueCrudComponent implements OnInit {
   }
 
   excluir(p: EstoqueItem) {
-    if (!confirm(`Excluir "${p.nome}"?`)) return;
+    if (!confirm(`Excluir "${p.nome}"? Esta ação não pode ser desfeita.`)) return;
     this.service.excluir(p.id!).subscribe({
       next: () => { this.sucesso = 'Peça excluída.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
       error: () => { this.erroGeral = 'Erro ao excluir.'; }
     });
+  }
+
+  consultar() {
+    this.resultado = null;
+    this.erro = '';
+    if (!this.valor) { this.erro = 'Informe um valor.'; return; }
+    if (this.campo === 'id') {
+      const id = Number(this.valor);
+      if (isNaN(id)) { this.erro = 'ID deve ser número.'; return; }
+      this.searchLoading = true;
+      this.service.buscarPorId(id).subscribe({
+        next: d => { this.resultado = d; this.searchLoading = false; },
+        error: () => { this.erro = 'Não encontrado.'; this.searchLoading = false; }
+      });
+    } else {
+      const val = this.valor.toLowerCase();
+      const found = this.itens.find(p => String(p[this.campo as keyof EstoqueItem] ?? '').toLowerCase().includes(val));
+      this.resultado = found ?? null;
+      if (!found) this.erro = 'Não encontrado.';
+    }
   }
 }

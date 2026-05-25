@@ -233,6 +233,29 @@ export class ClientesCrudComponent implements OnInit {
 
   ngOnInit() { this.listar(); }
 
+  private maskTel(v: string): string {
+    const d = v.replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  }
+
+  private maskCpfCnpj(v: string): string {
+    const d = v.replace(/\D/g, '').slice(0, 14);
+    if (this.form.tipo === 'PJ') {
+      if (d.length <= 2) return d;
+      if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`;
+      if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`;
+      if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`;
+      return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`;
+    }
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
+    if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+    return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+  }
+
   listar() {
     this.listLoading = true;
     this.service.listar().subscribe({
@@ -250,11 +273,37 @@ export class ClientesCrudComponent implements OnInit {
       this.erroGeral = 'Email inválido.';
       return;
     }
+    if (this.form.tipo === 'PF') {
+      const cpf = (this.form.cpfCnpj ?? '').replace(/\D/g, '');
+      if (cpf.length > 0 && cpf.length !== 11) {
+        this.erroGeral = 'CPF deve ter 11 dígitos.';
+        return;
+      }
+    }
+    if (this.form.tipo === 'PJ') {
+      const cnpj = (this.form.cpfCnpj ?? '').replace(/\D/g, '');
+      if (cnpj.length > 0 && cnpj.length !== 14) {
+        this.erroGeral = 'CNPJ deve ter 14 dígitos.';
+        return;
+      }
+    }
+    const dup = this.todos.find(c =>
+      c.id !== this.editId && (
+        c.nome.toLowerCase() === this.form.nome?.toLowerCase() ||
+        (this.form.email && c.email.toLowerCase() === this.form.email.toLowerCase()) ||
+        (this.form.cpfCnpj && c.cpfCnpj === this.form.cpfCnpj)
+      )
+    );
+    if (dup) {
+      this.erroGeral = 'Já existe um cliente com este nome, email ou CPF/CNPJ.';
+      return;
+    }
     this.loading = true;
     this.erroGeral = '';
+    const editando = !!this.editId;
     const payload: Cliente = { ...this.form as Cliente, ativo: true };
-    const op = this.editId
-      ? this.service.editar({ ...payload, id: this.editId })
+    const op = editando
+      ? this.service.editar({ ...payload, id: this.editId! })
       : this.service.incluir(payload);
 
     op.subscribe({
@@ -263,7 +312,7 @@ export class ClientesCrudComponent implements OnInit {
         this.showForm = false;
         this.editId = null;
         this.form = { tipo: 'PF', ativo: true };
-        this.sucesso = 'Cliente salvo com sucesso.';
+        this.sucesso = editando ? 'Cliente atualizado.' : 'Cliente cadastrado.';
         setTimeout(() => this.sucesso = '', 3000);
         this.listar();
       },
@@ -278,7 +327,7 @@ export class ClientesCrudComponent implements OnInit {
   }
 
   arquivar(c: Cliente) {
-    if (!confirm(`Arquivar cliente "${c.nome}"?`)) return;
+    if (!confirm(`Arquivar "${c.nome}"? O cliente ficará inativo.`)) return;
     this.service.editar({ ...c, ativo: false }).subscribe({
       next: () => { this.sucesso = 'Cliente arquivado.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
       error: () => { this.erroGeral = 'Erro ao arquivar.'; }

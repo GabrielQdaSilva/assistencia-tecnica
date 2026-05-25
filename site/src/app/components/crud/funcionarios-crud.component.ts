@@ -181,9 +181,6 @@ import { Funcionario } from '../../core/types/types';
   `]
 })
 export class FuncionariosCrudComponent implements OnInit {
-  @Input() successMsg = '';
-  @Input() errorMsg = '';
-
   constructor(private service: FuncionariosService) {}
 
   itens: Funcionario[] = [];
@@ -202,6 +199,14 @@ export class FuncionariosCrudComponent implements OnInit {
 
   ngOnInit() { this.listar(); }
 
+  private maskTel(v: string): string {
+    const d = v.replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  }
+
   listar() {
     this.listLoading = true;
     this.service.listar().subscribe({
@@ -219,6 +224,10 @@ export class FuncionariosCrudComponent implements OnInit {
       this.erroGeral = 'Email inválido.';
       return;
     }
+    if (this.form.salario && this.form.salario < 0) {
+      this.erroGeral = 'Salário não pode ser negativo.';
+      return;
+    }
     const dup = this.itens.find(f =>
       f.id !== this.editId && (
         f.nome.toLowerCase() === this.form.nome?.toLowerCase() ||
@@ -233,8 +242,9 @@ export class FuncionariosCrudComponent implements OnInit {
 
     this.loading = true;
     this.erroGeral = '';
-    const op = this.editId
-      ? this.service.editar({ ...this.form as Funcionario, id: this.editId })
+    const editando = !!this.editId;
+    const op = editando
+      ? this.service.editar({ ...this.form as Funcionario, id: this.editId! })
       : this.service.incluir(this.form as Funcionario);
 
     op.subscribe({
@@ -243,7 +253,7 @@ export class FuncionariosCrudComponent implements OnInit {
         this.showForm = false;
         this.editId = null;
         this.form = {};
-        this.sucesso = this.editId ? 'Funcionário atualizado.' : 'Funcionário cadastrado.';
+        this.sucesso = editando ? 'Funcionário atualizado.' : 'Funcionário cadastrado.';
         setTimeout(() => this.sucesso = '', 3000);
         this.listar();
       },
@@ -258,7 +268,7 @@ export class FuncionariosCrudComponent implements OnInit {
   }
 
   excluir(f: Funcionario) {
-    if (!confirm(`Excluir funcionário "${f.nome}"?`)) return;
+    if (!confirm(`Excluir "${f.nome}"? Esta ação não pode ser desfeita.`)) return;
     this.service.excluir(f.id!).subscribe({
       next: () => { this.sucesso = 'Funcionário excluído.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
       error: () => { this.erroGeral = 'Erro ao excluir.'; }

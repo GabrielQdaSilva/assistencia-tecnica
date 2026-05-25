@@ -211,7 +211,7 @@ export class EquipamentosCrudComponent implements OnInit {
   erroGeral = '';
 
   ngOnInit() {
-    this.clientesService.listar().subscribe(c => this.clientes = c.filter(c => c.ativo));
+    this.clientesService.listar().subscribe(cs => this.clientes = cs.filter(c => c.ativo));
     this.listar();
   }
 
@@ -233,6 +233,14 @@ export class EquipamentosCrudComponent implements OnInit {
     if (!this.form.clienteId || !this.form.marca || !this.form.modelo) {
       this.erroGeral = 'Cliente, Marca e Modelo são obrigatórios.';
       return;
+    }
+    if (this.form.serial) {
+      const dupSerial = this.itens.find(e => e.id !== this.editId && e.serial === this.form.serial);
+      if (dupSerial) { this.erroGeral = 'Já existe equipamento com este Nº de Série.'; return; }
+    }
+    if (this.form.imei) {
+      const dupImei = this.itens.find(e => e.id !== this.editId && e.imei === this.form.imei);
+      if (dupImei) { this.erroGeral = 'Já existe equipamento com este IMEI.'; return; }
     }
     this.loading = true;
     this.erroGeral = '';
@@ -269,7 +277,7 @@ export class EquipamentosCrudComponent implements OnInit {
   }
 
   excluir(e: Equipamento) {
-    if (!confirm(`Excluir ${e.marca} ${e.modelo}?`)) return;
+    if (!confirm(`Excluir equipamento "${e.marca} ${e.modelo}"?`)) return;
     this.service.excluir(e.id!).subscribe({
       next: () => { this.sucesso = 'Equipamento excluído.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
       error: () => { this.erroGeral = 'Erro ao excluir.'; }
