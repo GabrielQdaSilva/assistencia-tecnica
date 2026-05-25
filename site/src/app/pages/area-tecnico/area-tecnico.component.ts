@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { OrdensService } from '../../core/services/ordens.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { FuncionariosService } from '../../core/services/funcionarios.service';
@@ -141,6 +142,14 @@ import { OrdemServico, Cliente, Funcionario, Equipamento } from '../../core/type
               <option value="Pronto">Pronto</option>
               <option value="Entregue">Entregue</option>
             </select>
+            <div class="view-toggle">
+              <button class="view-btn" [class.active]="viewMode === 'table'" (click)="viewMode='table'" title="Visualizar tabela">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              </button>
+              <button class="view-btn" [class.active]="viewMode === 'kanban'" (click)="viewMode='kanban'" title="Visualizar kanban">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              </button>
+            </div>
             <button class="btn-primary" (click)="showForm = !showForm">
               {{ showForm ? 'Cancelar' : '+ Nova Ordem' }}
             </button>
@@ -194,62 +203,124 @@ import { OrdemServico, Cliente, Funcionario, Equipamento } from '../../core/type
               <input [value]="(form.valorServico ?? 0) + (form.valorPecas ?? 0) || ''" type="text" placeholder="Total" class="inp" readonly/>
             </div>
             <textarea [(ngModel)]="form.observacoes" placeholder="Observações" class="inp inp-area" rows="2"></textarea>
-            <div class="form-actions">
-              <button class="btn-primary" [disabled]="saving" (click)="salvar()">
-                @if (saving) { Salvando... } @else { Salvar }
-              </button>
-              <button class="btn-sec" (click)="cancelarForm()">Cancelar</button>
+              <div class="form-actions">
+                <button class="btn-primary" [disabled]="saving" (click)="salvar()">
+                  @if (saving) { Salvando... } @else { Salvar }
+                </button>
+                <button class="btn-sec" (click)="cancelarForm()">Cancelar</button>
+                @if (editId && form.historico && form.historico.length > 0) {
+                  <button class="btn-sec" (click)="showTimeline = !showTimeline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Histórico
+                  </button>
+                  <button class="btn-sec" (click)="imprimirOS()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Imprimir
+                  </button>
+                }
+              </div>
+              @if (showTimeline && form.historico) {
+                <div class="timeline">
+                  <div class="timeline-title">Linha do Tempo</div>
+                  @for (h of form.historico; track $index) {
+                    <div class="timeline-item">
+                      <div class="timeline-dot" [class]="'td-' + statusClass(h.status)"></div>
+                      <div class="timeline-content">
+                        <span class="timeline-status">{{ h.status }}</span>
+                        <span class="timeline-data">{{ h.data }}</span>
+                        <span class="timeline-resp">{{ h.responsavel }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             </div>
+          }
+
+        @if (viewMode === 'kanban') {
+          <div class="kanban-board">
+            @for (col of colunasKanban; track col.key) {
+              <div class="kanban-col">
+                <div class="kanban-col-header" [class]="'kh-' + col.cls">
+                  <span class="kanban-col-title">{{ col.label }}</span>
+                  <span class="kanban-col-count">{{ col.itens.length }}</span>
+                </div>
+                <div class="kanban-col-body">
+                  @for (o of col.itens; track o.id) {
+                    <div class="kanban-card" [class]="'kc-prio-' + o.prioridade.toLowerCase()" (click)="editar(o)">
+                      <div class="kc-top">
+                        <span class="kc-id">#{{ o.id }}</span>
+                        <span class="prio-badge" [class]="'prio-' + o.prioridade.toLowerCase()">{{ o.prioridade }}</span>
+                      </div>
+                      <strong class="kc-aparelho">{{ o.aparelho }}</strong>
+                      <span class="kc-cliente">{{ o.clienteNome }}</span>
+                      @if (o.tempoEstimado) {
+                        <span class="kc-prazo">{{ o.tempoEstimado }}d</span>
+                      }
+                      <div class="kc-footer">
+                        <span class="kc-tecnico">{{ o.tecnicoNome }}</span>
+                        <span class="kc-valor">{{ o.valorTotal ? 'R$ ' + o.valorTotal.toFixed(2) : '' }}</span>
+                      </div>
+                    </div>
+                  }
+                  @if (col.itens.length === 0) {
+                    <div class="kanban-empty">Vazio</div>
+                  }
+                </div>
+              </div>
+            }
           </div>
         }
 
-        <div class="table-wrapper">
-          @if (loading) {
-            <p class="empty">Carregando...</p>
-          } @else if (ordensFiltradas.length === 0) {
-            <p class="empty">Nenhuma ordem de serviço encontrada.</p>
-          } @else {
-            <table>
-              <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Prioridade</th>
-                    <th>Técnico</th>
-                    <th>Cliente</th>
-                    <th>Aparelho</th>
-                    <th>Status</th>
-                    <th>Entrada</th>
-                    <th>Prev.</th>
-                    <th>Valor</th>
-                    <th>Ações</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  @for (o of ordensFiltradas; track o.id) {
+        @if (viewMode === 'table') {
+          <div class="table-wrapper">
+            @if (loading) {
+              <p class="empty">Carregando...</p>
+            } @else if (ordensFiltradas.length === 0) {
+              <p class="empty">Nenhuma ordem de serviço encontrada.</p>
+            } @else {
+              <table>
+                <thead>
                     <tr>
-                      <td>{{ o.id }}</td>
-                      <td>
-                        <span class="prio-badge" [class]="'prio-' + o.prioridade.toLowerCase()">{{ o.prioridade }}</span>
-                      </td>
-                      <td>{{ o.tecnicoNome }}</td>
-                      <td>{{ o.clienteNome }}</td>
-                      <td>{{ o.aparelho }}</td>
-                      <td>
-                        <span class="status-badge" [class]="statusClass(o.status)">{{ o.status }}</span>
-                      </td>
-                      <td>{{ o.dataEntrada }}</td>
-                      <td>{{ o.tempoEstimado ? o.tempoEstimado + 'd' : '-' }}</td>
-                      <td>{{ o.valorTotal ? 'R$ ' + o.valorTotal.toFixed(2) : '-' }}</td>
-                      <td class="actions">
-                        <button class="btn-sm btn-blue" (click)="editar(o)">Editar</button>
-                        <button class="btn-sm btn-red" (click)="excluir(o)">Excluir</button>
-                      </td>
+                      <th>ID</th>
+                      <th>Prioridade</th>
+                      <th>Técnico</th>
+                      <th>Cliente</th>
+                      <th>Aparelho</th>
+                      <th>Status</th>
+                      <th>Entrada</th>
+                      <th>Prev.</th>
+                      <th>Valor</th>
+                      <th>Ações</th>
                     </tr>
-                  }
-              </tbody>
-            </table>
-          }
-        </div>
+                </thead>
+                <tbody>
+                    @for (o of ordensFiltradas; track o.id) {
+                      <tr>
+                        <td>{{ o.id }}</td>
+                        <td>
+                          <span class="prio-badge" [class]="'prio-' + o.prioridade.toLowerCase()">{{ o.prioridade }}</span>
+                        </td>
+                        <td>{{ o.tecnicoNome }}</td>
+                        <td>{{ o.clienteNome }}</td>
+                        <td>{{ o.aparelho }}</td>
+                        <td>
+                          <span class="status-badge" [class]="statusClass(o.status)">{{ o.status }}</span>
+                        </td>
+                        <td>{{ o.dataEntrada }}</td>
+                        <td>{{ o.tempoEstimado ? o.tempoEstimado + 'd' : '-' }}</td>
+                        <td>{{ o.valorTotal ? 'R$ ' + o.valorTotal.toFixed(2) : '-' }}</td>
+                        <td class="actions">
+                          <button class="btn-sm btn-blue" (click)="editar(o)">Editar</button>
+                          <button class="btn-sm btn-red" (click)="excluir(o)">Excluir</button>
+                        </td>
+                      </tr>
+                    }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
       </main>
     </div>
   `,
@@ -430,6 +501,94 @@ import { OrdemServico, Cliente, Funcionario, Equipamento } from '../../core/type
     .prio-alta { background: rgba(249,115,22,.12); color: #fb923c; }
     .prio-urgente { background: rgba(239,68,68,.12); color: #f87171; }
 
+    .view-toggle { display: flex; gap: 4px; background: var(--surface-hover); border-radius: 8px; padding: 3px; }
+    .view-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 6px; border: none;
+      background: transparent; color: var(--text-muted); cursor: pointer; transition: all .2s;
+    }
+    .view-btn:hover { color: var(--text); background: rgba(255,255,255,.04); }
+    .view-btn.active { background: var(--bg); color: var(--primary); }
+
+    .kanban-board {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+      margin-bottom: 24px; min-height: 300px;
+    }
+    @media (max-width: 1100px) { .kanban-board { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 450px) { .kanban-board { grid-template-columns: 1fr; } }
+    .kanban-col {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; display: flex; flex-direction: column;
+      max-height: 600px;
+    }
+    .kanban-col-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      border-radius: 12px 12px 0 0; font-size: .82rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .kh-fila { background: rgba(59,130,246,.08); color: #60a5fa; }
+    .kh-analise { background: rgba(234,179,8,.08); color: #fbbf24; }
+    .kh-aprovado { background: rgba(168,85,247,.08); color: #c084fc; }
+    .kh-pronto { background: rgba(34,197,94,.08); color: #4ade80; }
+    .kh-entregue { background: rgba(107,114,128,.08); color: #9ca3af; }
+    .kanban-col-title { font-size: .78rem; }
+    .kanban-col-count {
+      font-size: .75rem; width: 24px; height: 24px; display: flex;
+      align-items: center; justify-content: center; border-radius: 6px;
+      background: rgba(0,0,0,.2);
+    }
+    .kanban-col-body {
+      flex: 1; overflow-y: auto; padding: 8px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .kanban-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; cursor: pointer;
+      transition: all .2s; display: flex; flex-direction: column; gap: 6px;
+      border-left: 3px solid transparent;
+    }
+    .kanban-card:hover { border-color: var(--primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    .kc-prio-urgente { border-left-color: #f87171; }
+    .kc-prio-alta { border-left-color: #fb923c; }
+    .kc-prio-normal { border-left-color: #60a5fa; }
+    .kc-prio-baixa { border-left-color: #9ca3af; }
+    .kc-top { display: flex; align-items: center; justify-content: space-between; }
+    .kc-id { font-weight: 700; font-size: .85rem; color: var(--text); }
+    .kc-aparelho { font-size: .85rem; font-weight: 600; color: var(--text); }
+    .kc-cliente { font-size: .78rem; color: var(--text-muted); }
+    .kc-prazo { font-size: .72rem; color: var(--text-muted); }
+    .kc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: .75rem; }
+    .kc-tecnico { color: var(--text-muted); }
+    .kc-valor { font-weight: 700; color: var(--primary); }
+    .kanban-empty { text-align: center; padding: 24px; color: var(--text-muted); font-size: .8rem; }
+
+    .timeline {
+      margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+    }
+    .timeline-title { font-size: .82rem; font-weight: 700; color: var(--text); margin-bottom: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    .timeline-item {
+      display: flex; gap: 12px; padding-bottom: 16px;
+      position: relative;
+    }
+    .timeline-item:not(:last-child)::after {
+      content: ''; position: absolute; left: 7px; top: 18px; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .timeline-dot {
+      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+    }
+    .td-na-fila { background: #60a5fa; }
+    .td-em-análise { background: #fbbf24; }
+    .td-orçamento-aprovado { background: #c084fc; }
+    .td-pronto { background: #4ade80; }
+    .td-entregue { background: #9ca3af; }
+    .timeline-content { display: flex; flex-direction: column; gap: 2px; }
+    .timeline-status { font-size: .85rem; font-weight: 600; color: var(--text); }
+    .timeline-data { font-size: .75rem; color: var(--text-muted); }
+    .timeline-resp { font-size: .75rem; color: var(--text-muted); }
+
     .btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 11px 24px; background: var(--primary); color: #fff;
@@ -487,10 +646,24 @@ export class AreaTecnicoComponent implements OnInit {
   saving = false;
   loading = false;
 
+  viewMode: 'table' | 'kanban' = 'table';
+  showTimeline = false;
+
   toast = { show: false, message: '', tipo: 'success' as 'success' | 'error' };
   confirm = { show: false, title: '', text: '', loading: false, item: null as OrdemServico | null };
 
   stats = { total: 0, fila: 0, analise: 0, aprovado: 0, pronto: 0, entregue: 0 };
+
+  get colunasKanban() {
+    const colunas = [
+      { key: 'Na Fila', label: 'Na Fila', cls: 'fila', itens: this.ordensFiltradas.filter(o => o.status === 'Na Fila') },
+      { key: 'Em Análise', label: 'Em Análise', cls: 'analise', itens: this.ordensFiltradas.filter(o => o.status === 'Em Análise') },
+      { key: 'Orçamento Aprovado', label: 'Orç. Aprovado', cls: 'aprovado', itens: this.ordensFiltradas.filter(o => o.status === 'Orçamento Aprovado') },
+      { key: 'Pronto', label: 'Pronto', cls: 'pronto', itens: this.ordensFiltradas.filter(o => o.status === 'Pronto') },
+      { key: 'Entregue', label: 'Entregue', cls: 'entregue', itens: this.ordensFiltradas.filter(o => o.status === 'Entregue') }
+    ];
+    return colunas;
+  }
 
   ngOnInit() {
     this.carregarDados();
@@ -503,21 +676,28 @@ export class AreaTecnicoComponent implements OnInit {
 
   carregarDados() {
     this.loading = true;
-    this.funcionariosService.listar().subscribe(f => this.funcionarios = f);
-    this.clientesService.listar().subscribe(c => this.clientes = c.filter(c => c.ativo));
-    this.equipamentosService.listar().subscribe(e => this.equipamentos = e);
-    this.ordensService.listar().subscribe({
-      next: data => {
-        this.ordens = data;
-        this.calcularStats();
+    forkJoin({
+      funcionarios: this.funcionariosService.listar(),
+      clientes: this.clientesService.listar(),
+      equipamentos: this.equipamentosService.listar(),
+      ordens: this.ordensService.listar()
+    }).subscribe({
+      next: (r) => {
+        this.funcionarios = r.funcionarios;
+        this.clientes = r.clientes;
+        this.equipamentos = r.equipamentos;
+        this.ordens = r.ordens;
         this.aplicarFiltro();
         this.loading = false;
       },
-      error: () => { this.mostrarToast('Erro ao carregar ordens.', 'error'); this.loading = false; }
+      error: () => { this.loading = false; this.mostrarToast('Erro ao carregar dados.', 'error'); }
     });
   }
 
-  private calcularStats() {
+  aplicarFiltro() {
+    this.ordensFiltradas = this.filtroStatus
+      ? this.ordens.filter(o => o.status === this.filtroStatus)
+      : [...this.ordens];
     this.stats.total = this.ordens.length;
     this.stats.fila = this.ordens.filter(o => o.status === 'Na Fila').length;
     this.stats.analise = this.ordens.filter(o => o.status === 'Em Análise').length;
@@ -526,54 +706,53 @@ export class AreaTecnicoComponent implements OnInit {
     this.stats.entregue = this.ordens.filter(o => o.status === 'Entregue').length;
   }
 
-  aplicarFiltro() {
-    if (this.filtroStatus) {
-      this.ordensFiltradas = this.ordens.filter(o => o.status === this.filtroStatus);
-    } else {
-      this.ordensFiltradas = [...this.ordens];
-    }
-  }
-
   cancelarForm() {
     this.showForm = false;
     this.editId = null;
     this.form = {};
+    this.showTimeline = false;
   }
 
   salvar() {
-    if (!this.form.tecnicoId || !this.form.clienteId || !this.form.aparelho || !this.form.defeito) {
-      this.mostrarToast('Técnico, Cliente, Aparelho e Defeito são obrigatórios.', 'error');
-      return;
-    }
-
     this.saving = true;
     const tecnico = this.funcionarios.find(f => f.id === this.form.tecnicoId);
     const cliente = this.clientes.find(c => c.id === this.form.clienteId);
     const equip = this.equipamentos.find(e => e.id === this.form.equipamentoId);
+    const user = this.auth.getUser();
+    const novoStatus = (this.form.status as OrdemServico['status']) ?? 'Na Fila';
+    const editando = !!this.editId;
+
+    let historico = this.form.historico ? [...this.form.historico] : [];
+    if (!editando) {
+      historico.push({ status: novoStatus, data: new Date().toISOString().replace('T', ' ').slice(0, 16), responsavel: user?.nome ?? 'Sistema' });
+    } else if (this.form.historico && this.form.historico[this.form.historico.length - 1]?.status !== novoStatus) {
+      historico.push({ status: novoStatus, data: new Date().toISOString().replace('T', ' ').slice(0, 16), responsavel: user?.nome ?? 'Sistema' });
+    }
 
     const payload: OrdemServico = {
-      tecnicoId: this.form.tecnicoId,
+      tecnicoId: this.form.tecnicoId ?? 0,
       tecnicoNome: tecnico?.nome ?? '',
-      clienteId: this.form.clienteId,
+      clienteId: this.form.clienteId ?? 0,
       clienteNome: cliente?.nome ?? '',
       equipamentoId: this.form.equipamentoId,
       equipamentoNome: equip ? `${equip.marca} ${equip.modelo}` : undefined,
-      aparelho: this.form.aparelho,
+      aparelho: this.form.aparelho ?? '',
       tipoAparelho: this.form.tipoAparelho ?? '',
-      defeito: this.form.defeito,
-      status: (this.form.status as OrdemServico['status']) ?? 'Na Fila',
+      defeito: this.form.defeito ?? '',
+      status: novoStatus,
       prioridade: (this.form.prioridade as OrdemServico['prioridade']) ?? 'Normal',
-      dataEntrada: this.editId ? (this.form.dataEntrada ?? new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
+      dataEntrada: editando ? (this.form.dataEntrada ?? new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
       tempoEstimado: this.form.tempoEstimado ? Number(this.form.tempoEstimado) : undefined,
       valorServico: this.form.valorServico ? Number(this.form.valorServico) : undefined,
       valorPecas: this.form.valorPecas ? Number(this.form.valorPecas) : undefined,
       valorTotal: (this.form.valorServico ? Number(this.form.valorServico) : 0) + (this.form.valorPecas ? Number(this.form.valorPecas) : 0) || undefined,
       diagnosticos: this.form.diagnosticos,
-      observacoes: this.form.observacoes
+      observacoes: this.form.observacoes,
+      historico
     };
 
-    const op = this.editId
-      ? this.ordensService.editar({ ...payload, id: this.editId })
+    const op = editando
+      ? this.ordensService.editar({ ...payload, id: this.editId! })
       : this.ordensService.incluir(payload);
 
     op.subscribe({
@@ -629,6 +808,48 @@ export class AreaTecnicoComponent implements OnInit {
         this.mostrarToast('Erro ao excluir ordem.', 'error');
       }
     });
+  }
+
+  imprimirOS() {
+    const id = this.editId;
+    const o = this.ordens.find(x => x.id === id);
+    if (!o) return;
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(`
+      <html><head><title>OS #${o.id} - Prime Assistência</title>
+      <style>
+        body { font-family: 'Courier New', monospace; font-size: 12px; padding: 20px; color: #000; background: #fff; }
+        h1 { font-size: 18px; text-align: center; margin-bottom: 4px; }
+        h2 { font-size: 13px; text-align: center; color: #555; margin-bottom: 20px; font-weight: normal; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; font-size: 11px; }
+        th { background: #f0f0f0; font-weight: 700; }
+        .total { font-size: 14px; font-weight: 700; text-align: right; margin-top: 8px; }
+        .footer { text-align: center; margin-top: 24px; font-size: 10px; color: #888; border-top: 1px dashed #ccc; padding-top: 12px; }
+      </style></head><body>
+      <h1>Prime Assistência</h1>
+      <h2>Ordem de Serviço #${o.id}</h2>
+      <table><tr><th>Cliente</th><td>${o.clienteNome}</td></tr>
+      <tr><th>Aparelho</th><td>${o.aparelho}</td></tr>
+      <tr><th>Tipo</th><td>${o.tipoAparelho}</td></tr>
+      <tr><th>Defeito</th><td>${o.defeito}</td></tr>
+      <tr><th>Diagnóstico</th><td>${o.diagnosticos || '—'}</td></tr>
+      <tr><th>Status</th><td>${o.status}</td></tr>
+      <tr><th>Prioridade</th><td>${o.prioridade}</td></tr>
+      <tr><th>Técnico</th><td>${o.tecnicoNome}</td></tr>
+      <tr><th>Entrada</th><td>${o.dataEntrada}</td></tr>
+      ${o.tempoEstimado ? `<tr><th>Prazo</th><td>${o.tempoEstimado} dias</td></tr>` : ''}
+      ${o.valorServico ? `<tr><th>Mão de obra</th><td>R$ ${o.valorServico.toFixed(2)}</td></tr>` : ''}
+      ${o.valorPecas ? `<tr><th>Peças</th><td>R$ ${o.valorPecas.toFixed(2)}</td></tr>` : ''}
+      ${o.valorTotal ? `<tr><th>Total</th><td>R$ ${o.valorTotal.toFixed(2)}</td></tr>` : ''}
+      </table>
+      ${o.observacoes ? `<p><strong>Observações:</strong> ${o.observacoes}</p>` : ''}
+      <div class="footer">Documento gerado em ${new Date().toLocaleString('pt-BR')} - Prime Assistência</div>
+      <script>window.print();window.close();</script>
+      </body></html>
+    `);
+    w.document.close();
   }
 
   sair() {

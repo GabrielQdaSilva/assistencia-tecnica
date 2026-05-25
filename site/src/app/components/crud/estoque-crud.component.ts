@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EstoqueService } from '../../core/services/estoque.service';
 import { EstoqueItem } from '../../core/types/types';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-estoque-crud',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
       <button class="btn-primary" (click)="showForm = !showForm">
@@ -105,7 +106,7 @@ import { EstoqueItem } from '../../core/types/types';
                 <td [class.text-success]="margem(p) >= 40">{{ margem(p) }}%</td>
                 <td class="actions">
                   <button class="btn-sm btn-blue" (click)="editar(p)">Editar</button>
-                  <button class="btn-sm btn-red" (click)="excluir(p)">Excluir</button>
+                  <button class="btn-sm btn-red" (click)="confirmExcluir(p)">Excluir</button>
                 </td>
               </tr>
             }
@@ -113,6 +114,15 @@ import { EstoqueItem } from '../../core/types/types';
         </table>
       }
     </div>
+
+    <app-confirm-dialog
+      [show]="confirm.show"
+      [title]="confirm.title"
+      [text]="confirm.text"
+      [loading]="confirm.loading"
+      (confirmar)="confirmOk()"
+      (cancelar)="confirmCancel()"
+    />
 
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
@@ -209,6 +219,7 @@ export class EstoqueCrudComponent implements OnInit {
   erro = '';
   sucesso = '';
   erroGeral = '';
+  confirm = { show: false, title: '', text: '', loading: false, item: null as EstoqueItem | null };
 
   get baixoEstoque() { return this.itens.filter(p => p.quantidade <= p.estoqueMinimo); }
 
@@ -279,13 +290,17 @@ export class EstoqueCrudComponent implements OnInit {
     this.showForm = true;
   }
 
-  excluir(p: EstoqueItem) {
-    if (!confirm(`Excluir "${p.nome}"? Esta ação não pode ser desfeita.`)) return;
-    this.service.excluir(p.id!).subscribe({
-      next: () => { this.sucesso = 'Peça excluída.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
-      error: () => { this.erroGeral = 'Erro ao excluir.'; }
+  confirmExcluir(p: EstoqueItem) {
+    this.confirm = { show: true, title: 'Excluir Peça', text: `Excluir "${p.nome}"? Esta ação não pode ser desfeita.`, loading: false, item: p };
+  }
+  confirmOk() {
+    const p = this.confirm.item; if (!p?.id) return; this.confirm.loading = true;
+    this.service.excluir(p.id).subscribe({
+      next: () => { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; this.sucesso = 'Peça excluída.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
+      error: () => { this.confirm.show = false; this.erroGeral = 'Erro ao excluir.'; }
     });
   }
+  confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
   consultar() {
     this.resultado = null;

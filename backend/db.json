@@ -113,7 +113,6 @@
   ],
   "ordens": [
     {
-      "id": 1,
       "tecnicoId": 1,
       "tecnicoNome": "João Silva",
       "clienteId": 1,
@@ -131,7 +130,25 @@
       "valorPecas": 179,
       "valorTotal": 299,
       "diagnosticos": "Display danificado, touch não responde. Necessário troca completa do conjunto tela.",
-      "observacoes": "Aguardando chegar a tela"
+      "observacoes": "Aguardando chegar a tela",
+      "historico": [
+        {
+          "status": "Na Fila",
+          "data": "2026-05-20 09:15",
+          "responsavel": "Maria Souza"
+        },
+        {
+          "status": "Em Análise",
+          "data": "2026-05-20 14:30",
+          "responsavel": "João Silva"
+        },
+        {
+          "status": "Orçamento Aprovado",
+          "data": "2026-05-21 10:00",
+          "responsavel": "João Silva"
+        }
+      ],
+      "id": 1
     },
     {
       "id": 2,
@@ -151,7 +168,19 @@
       "valorServico": 80,
       "valorTotal": 80,
       "diagnosticos": "Suspeita de falha na placa-mãe. Testando componentes de alimentação.",
-      "observacoes": ""
+      "observacoes": "",
+      "historico": [
+        {
+          "status": "Na Fila",
+          "data": "2026-05-22 08:00",
+          "responsavel": "Maria Souza"
+        },
+        {
+          "status": "Em Análise",
+          "data": "2026-05-22 11:20",
+          "responsavel": "João Silva"
+        }
+      ]
     },
     {
       "id": 3,
@@ -172,7 +201,24 @@
       "valorPecas": 149,
       "valorTotal": 229,
       "diagnosticos": "Bateria com capacidade reduzida para 12%. Substituição necessária.",
-      "observacoes": "Aguardando chegada da bateria"
+      "observacoes": "Aguardando chegada da bateria",
+      "historico": [
+        {
+          "status": "Na Fila",
+          "data": "2026-05-18 14:00",
+          "responsavel": "Maria Souza"
+        },
+        {
+          "status": "Em Análise",
+          "data": "2026-05-18 16:30",
+          "responsavel": "Beltrano"
+        },
+        {
+          "status": "Orçamento Aprovado",
+          "data": "2026-05-19 09:00",
+          "responsavel": "Beltrano"
+        }
+      ]
     },
     {
       "id": 4,
@@ -190,7 +236,14 @@
       "dataEntrada": "2026-05-23",
       "tempoEstimado": 4,
       "diagnosticos": "",
-      "observacoes": "Cliente relatou que já fez limpeza simples mas não resolveu"
+      "observacoes": "Cliente relatou que já fez limpeza simples mas não resolveu",
+      "historico": [
+        {
+          "status": "Na Fila",
+          "data": "2026-05-23 10:30",
+          "responsavel": "Maria Souza"
+        }
+      ]
     }
   ],
   "estoque": [

@@ -1,13 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FuncionariosService } from '../../core/services/funcionarios.service';
 import { Funcionario } from '../../core/types/types';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-funcionarios-crud',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
       <button class="btn-primary" (click)="showForm = !showForm">
@@ -85,7 +86,7 @@ import { Funcionario } from '../../core/types/types';
                 <td>{{ f.salario ? 'R$ ' + f.salario.toFixed(2) : '-' }}</td>
                 <td class="actions">
                   <button class="btn-sm btn-blue" (click)="editar(f)">Editar</button>
-                  <button class="btn-sm btn-red" (click)="excluir(f)">Excluir</button>
+                  <button class="btn-sm btn-red" (click)="confirmExcluir(f)">Excluir</button>
                 </td>
               </tr>
             }
@@ -93,6 +94,15 @@ import { Funcionario } from '../../core/types/types';
         </table>
       }
     </div>
+
+    <app-confirm-dialog
+      [show]="confirm.show"
+      [title]="confirm.title"
+      [text]="confirm.text"
+      [loading]="confirm.loading"
+      (confirmar)="confirmOk()"
+      (cancelar)="confirmCancel()"
+    />
 
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
@@ -197,6 +207,8 @@ export class FuncionariosCrudComponent implements OnInit {
   sucesso = '';
   erroGeral = '';
 
+  confirm = { show: false, title: '', text: '', loading: false, item: null as Funcionario | null };
+
   ngOnInit() { this.listar(); }
 
   private maskTel(v: string): string {
@@ -267,13 +279,17 @@ export class FuncionariosCrudComponent implements OnInit {
     this.showForm = true;
   }
 
-  excluir(f: Funcionario) {
-    if (!confirm(`Excluir "${f.nome}"? Esta ação não pode ser desfeita.`)) return;
-    this.service.excluir(f.id!).subscribe({
-      next: () => { this.sucesso = 'Funcionário excluído.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
-      error: () => { this.erroGeral = 'Erro ao excluir.'; }
+  confirmExcluir(f: Funcionario) {
+    this.confirm = { show: true, title: 'Excluir Funcionário', text: `Excluir "${f.nome}"? Esta ação não pode ser desfeita.`, loading: false, item: f };
+  }
+  confirmOk() {
+    const f = this.confirm.item; if (!f?.id) return; this.confirm.loading = true;
+    this.service.excluir(f.id).subscribe({
+      next: () => { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; this.sucesso = 'Funcionário excluído.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
+      error: () => { this.confirm.show = false; this.erroGeral = 'Erro ao excluir.'; }
     });
   }
+  confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
   consultar() {
     this.resultado = null;

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { EquipamentosService } from '../../core/services/equipamentos.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { Equipamento, Cliente } from '../../core/types/types';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-equipamentos-crud',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
       <button class="btn-primary" (click)="showForm = !showForm">
@@ -90,7 +91,7 @@ import { Equipamento, Cliente } from '../../core/types/types';
                 <td>{{ e.imei || '-' }}</td>
                 <td class="actions">
                   <button class="btn-sm btn-blue" (click)="editar(e)">Editar</button>
-                  <button class="btn-sm btn-red" (click)="excluir(e)">Excluir</button>
+                  <button class="btn-sm btn-red" (click)="confirmExcluir(e)">Excluir</button>
                 </td>
               </tr>
             }
@@ -98,6 +99,15 @@ import { Equipamento, Cliente } from '../../core/types/types';
         </table>
       }
     </div>
+
+    <app-confirm-dialog
+      [show]="confirm.show"
+      [title]="confirm.title"
+      [text]="confirm.text"
+      [loading]="confirm.loading"
+      (confirmar)="confirmOk()"
+      (cancelar)="confirmCancel()"
+    />
 
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
@@ -209,6 +219,7 @@ export class EquipamentosCrudComponent implements OnInit {
   erro = '';
   sucesso = '';
   erroGeral = '';
+  confirm = { show: false, title: '', text: '', loading: false, item: null as Equipamento | null };
 
   ngOnInit() {
     this.clientesService.listar().subscribe(cs => this.clientes = cs.filter(c => c.ativo));
@@ -276,13 +287,17 @@ export class EquipamentosCrudComponent implements OnInit {
     this.showForm = true;
   }
 
-  excluir(e: Equipamento) {
-    if (!confirm(`Excluir equipamento "${e.marca} ${e.modelo}"?`)) return;
-    this.service.excluir(e.id!).subscribe({
-      next: () => { this.sucesso = 'Equipamento excluído.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
-      error: () => { this.erroGeral = 'Erro ao excluir.'; }
+  confirmExcluir(e: Equipamento) {
+    this.confirm = { show: true, title: 'Excluir Equipamento', text: `Excluir "${e.marca} ${e.modelo}"?`, loading: false, item: e };
+  }
+  confirmOk() {
+    const e = this.confirm.item; if (!e?.id) return; this.confirm.loading = true;
+    this.service.excluir(e.id).subscribe({
+      next: () => { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; this.sucesso = 'Equipamento excluído.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
+      error: () => { this.confirm.show = false; this.erroGeral = 'Erro ao excluir.'; }
     });
   }
+  confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
   consultar() {
     this.resultado = null;

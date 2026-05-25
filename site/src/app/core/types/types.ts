@@ -31,6 +31,12 @@ export interface Equipamento {
   observacoes?: string;
 }
 
+export interface HistoricoOS {
+  status: string;
+  data: string;
+  responsavel: string;
+}
+
 export interface OrdemServico {
   id?: number;
   tecnicoId: number;
@@ -52,6 +58,7 @@ export interface OrdemServico {
   valorTotal?: number;
   diagnosticos?: string;
   observacoes?: string;
+  historico?: HistoricoOS[];
 }
 
 export interface EstoqueItem {

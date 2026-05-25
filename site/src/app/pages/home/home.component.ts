@@ -1,36 +1,41 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { FuncionariosCrudComponent } from '../../components/crud/funcionarios-crud.component';
-import { ClientesCrudComponent } from '../../components/crud/clientes-crud.component';
-import { EquipamentosCrudComponent } from '../../components/crud/equipamentos-crud.component';
-import { EstoqueCrudComponent } from '../../components/crud/estoque-crud.component';
 import { OrdensService } from '../../core/services/ordens.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { EquipamentosService } from '../../core/services/equipamentos.service';
-import { OrdemServico } from '../../core/types/types';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FuncionariosCrudComponent, ClientesCrudComponent, EquipamentosCrudComponent, EstoqueCrudComponent],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="landing">
 
       <!-- Hero -->
-      <section class="hero">
-        <div class="hero-bg"></div>
-        <div class="hero-content">
-          <div class="hero-badge">Especialistas em Reparos</div>
-          <h1>Prime <span class="accent">Assistência</span></h1>
-          <p class="hero-sub">Seu dispositivo funcionando como novo. Rapidez e qualidade em cada reparo.</p>
-          <p class="hero-desc">Smartphones, notebooks, desktops, tablets e muito mais. Orçamento sem compromisso.</p>
-          <div class="hero-actions">
-            <a class="btn-primary-lg" routerLink="/area-tecnico">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Área do Técnico
-            </a>
+      <section class="hero" id="inicio">
+        <div class="hero-inner">
+          <div class="hero-grid">
+            <div class="hero-text">
+              <h1>Seu dispositivo novo de novo. <span class="accent">Manutenção rápida e de confiança.</span></h1>
+              <p class="hero-sub">Especialistas em eletrônicos em geral. Se liga na tomada, é da nossa área!</p>
+              <p class="hero-desc">Smartphones, notebooks, desktops, TVs, monitores, impressoras e muito mais.</p>
+              <a class="btn-cta" routerLink="/login">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                Falar com um Técnico agora
+              </a>
+            </div>
+            <div class="hero-visual">
+              <div class="hero-box">
+                <svg width="200" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".15" style="width:100%;height:auto;"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>
+              </div>
+              <div class="hero-float-icon left">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <div class="hero-float-icon right">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -39,19 +44,19 @@ import { OrdemServico } from '../../core/types/types';
       <section class="stats">
         <div class="section-inner">
           <div class="stats-grid">
-            <div class="stat-item stat-dynamic">
+            <div class="stat-item">
               <span class="stat-num">{{ stats.totalOS }}</span>
               <span class="stat-label">Ordens de Serviço</span>
             </div>
-            <div class="stat-item stat-dynamic">
+            <div class="stat-item">
               <span class="stat-num">{{ stats.clientesAtivos }}</span>
               <span class="stat-label">Clientes Ativos</span>
             </div>
-            <div class="stat-item stat-dynamic">
+            <div class="stat-item">
               <span class="stat-num">{{ stats.equipamentos }}</span>
               <span class="stat-label">Equipamentos</span>
             </div>
-            <div class="stat-item stat-dynamic">
+            <div class="stat-item">
               <span class="stat-num">R$ {{ stats.receita }}</span>
               <span class="stat-label">Receita Total</span>
             </div>
@@ -64,237 +69,168 @@ import { OrdemServico } from '../../core/types/types';
         <div class="section-inner">
           <div class="section-header">
             <h2>Nossos Serviços</h2>
-            <p>Soluções completas para seus equipamentos eletrônicos</p>
+            <p>Soluções completas para todos os seus aparelhos eletrônicos</p>
+            <p class="section-tagline">"Ligou na tomada? Nós consertamos!"</p>
           </div>
           <div class="services-grid">
             <div class="service-card">
-              <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop');">
-                <div class="card-img-overlay"></div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              </div>
+              <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
               <h3>Smartphones & Tablets</h3>
-              <p>Troca de tela, bateria, conector de carga, reparo em placa, câmera e muito mais.</p>
-              <span class="service-price">A partir de R$ 79</span>
+              <p>Troca de tela, bateria, conectores e reparo de placa.</p>
             </div>
             <div class="service-card">
-              <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop');">
-                <div class="card-img-overlay"></div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
-              </div>
-              <h3>Notebooks</h3>
-              <p>Limpeza preventiva, troca de pasta térmica, reparo em carcaça, tela e teclado.</p>
-              <span class="service-price">A partir de R$ 149</span>
+              <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg></div>
+              <h3>Notebooks Corporativos e Gamers</h3>
+              <p>Limpeza preventiva, troca de pasta térmica, reparos em carcaça e diagnóstico completo.</p>
             </div>
             <div class="service-card">
-              <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1721333087357-74d172010700?w=400&h=300&fit=crop');">
-                <div class="card-img-overlay"></div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              </div>
-              <h3>Desktops & PCs</h3>
-              <p>Montagem, upgrade, instalação de SSD, formatação, limpeza e otimização.</p>
-              <span class="service-price">A partir de R$ 99</span>
+              <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+              <h3>Upgrades de Hardware</h3>
+              <p>Instalação de SSDs, configuração de memória RAM em Dual Channel e otimização de sistema operacional.</p>
             </div>
             <div class="service-card">
-              <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1665041974623-d398d035023e?w=400&h=300&fit=crop');">
-                <div class="card-img-overlay"></div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 12h20"/><path d="M12 2v20"/></svg>
-              </div>
-              <h3>Consoles</h3>
-              <p>Reparo de PlayStation, Xbox e Nintendo Switch. Limpeza e manutenção de controles.</p>
-              <span class="service-price">A partir de R$ 129</span>
+              <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 12h20"/><path d="M12 2v20"/></svg></div>
+              <h3>Montagem de Desktops</h3>
+              <p>Consultoria e montagem de computadores para trabalho pesado ou jogos.</p>
             </div>
-            <div class="service-card">
-              <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1551459601-c42a28ef7506?w=400&h=300&fit=crop');">
-                <div class="card-img-overlay"></div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              </div>
-              <h3>TVs & Monitores</h3>
-              <p>Reparo de fonte, troca de tela, problemas de imagem e conexões.</p>
-              <span class="service-price">A partir de R$ 119</span>
-            </div>
-            <div class="service-card">
-              <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=300&fit=crop');">
-                <div class="card-img-overlay"></div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              </div>
-              <h3>Outros Equipamentos</h3>
-              <p>Impressoras, roteadores, fontes, periféricos e equipamentos de áudio.</p>
-              <span class="service-price">Sob consulta</span>
-            </div>
+          </div>
+          <div class="services-banner">
+            <h3>E muito mais!</h3>
+            <p>TVs, monitores, impressoras, roteadores, fontes, consoles, equipamentos de áudio, periféricos e qualquer aparelho eletrônico que você precisar.</p>
+            <strong>Se liga na tomada, nós consertamos!</strong>
           </div>
         </div>
       </section>
 
-      <!-- Price Table -->
-      <section class="section price-section" id="precos">
-        <div class="section-inner">
-          <div class="section-header">
-            <h2>Tabela de Preços</h2>
-            <p>Principais serviços com valores referenciais</p>
-          </div>
-          <div class="price-table-wrap">
-            <table class="price-table">
-              <thead>
-                <tr><th>Serviço</th><th>Descrição</th><th>Valor</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Troca de tela (smartphone)</td><td>Tela original e substituição</td><td class="price-val">R$ 179</td></tr>
-                <tr><td>Troca de bateria</td><td>Bateria original + mão de obra</td><td class="price-val">R$ 129</td></tr>
-                <tr><td>Limpeza preventiva (notebook)</td><td>Limpeza interna + troca pasta térmica</td><td class="price-val">R$ 149</td></tr>
-                <tr><td>Instalação de SSD</td><td>SSD 240GB + instalação + sistema</td><td class="price-val">R$ 289</td></tr>
-                <tr><td>Formatação / reinstalação</td><td>Backup + formatação + drivers</td><td class="price-val">R$ 99</td></tr>
-                <tr><td>Reparo de conector de carga</td><td>Solda e substituição do conector</td><td class="price-val">R$ 89</td></tr>
-                <tr><td>Troca de tela (notebook)</td><td>Tela compatível + instalação</td><td class="price-val">R$ 249</td></tr>
-                <tr><td>Diagnóstico completo</td><td>Análise detalhada do equipamento</td><td class="price-val">Grátis</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="price-note">* Valores podem variar conforme modelo e disponibilidade de peças. Orçamento oficial mediante avaliação.</p>
-        </div>
-      </section>
-
-      <!-- How it works -->
-      <section class="section how-section">
-        <div class="section-inner">
-          <div class="section-header">
-            <h2>Como Funciona</h2>
-            <p>Processo simples e transparente em 3 etapas</p>
-          </div>
-          <div class="how-grid">
-            <div class="how-step">
-              <div class="how-num">1</div>
-              <div class="how-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              </div>
-              <h3>Diagnóstico</h3>
-              <p>Você nos conta o problema ou traz o aparelho. Fazemos uma análise completa e identificamos a causa.</p>
-            </div>
-            <div class="how-step">
-              <div class="how-num">2</div>
-              <div class="how-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              </div>
-              <h3>Orçamento</h3>
-              <p>Apresentamos o diagnóstico, explicamos o reparo necessário e informamos o valor. Sem surpresas.</p>
-            </div>
-            <div class="how-step">
-              <div class="how-num">3</div>
-              <div class="how-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <h3>Reparo</h3>
-              <p>Autorizou? Executamos o serviço com peças de qualidade e devolvemos seu aparelho funcionando.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Why -->
-      <section class="section why-section">
+      <!-- Features -->
+      <section class="features" id="sobre">
         <div class="section-inner">
           <div class="section-header">
             <h2>Por que nos escolher?</h2>
           </div>
-          <div class="why-grid">
-            <div class="why-card">
-              <div class="why-icon" style="background: rgba(59,130,246,.1);">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </div>
-              <h3>Garantia</h3>
-              <p>Todo serviço tem garantia de até 3 meses. Sua tranquilidade é nossa prioridade.</p>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+              <h3>Diagnóstico Preciso</h3>
+              <p>Sem enrolação. Identificamos o problema real e apresentamos a solução mais adequada.</p>
             </div>
-            <div class="why-card">
-              <div class="why-icon" style="background: rgba(59,130,246,.1);">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 2a4 4 0 0 0-4 4v2a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M5 11v3a7 7 0 0 0 14 0v-3"/></svg>
-              </div>
-              <h3>Peças Originais</h3>
-              <p>Trabalhamos com peças certificadas e compatíveis para garantir o melhor resultado.</p>
+            <div class="feature-card">
+              <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+              <h3>Peças de Qualidade</h3>
+              <p>Utilizamos apenas componentes certificados com garantia completa no serviço.</p>
             </div>
-            <div class="why-card">
-              <div class="why-icon" style="background: rgba(59,130,246,.1);">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              </div>
+            <div class="feature-card">
+              <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
               <h3>Rapidez</h3>
-              <p>Diagnóstico rápido e reparo ágil. A maioria dos serviços fica pronto em até 48h.</p>
-            </div>
-            <div class="why-card">
-              <div class="why-icon" style="background: rgba(59,130,246,.1);">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M5 7v14h14V7"/><path d="M3 7h18"/></svg>
-              </div>
-              <h3>Orçamento Grátis</h3>
-              <p>Diagnóstico sem compromisso. Você só paga se autorizar o serviço.</p>
+              <p>Seu aparelho pronto no menor tempo possível, sem comprometer a qualidade.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Gerenciamento CRUD -->
-      <section class="section crud-section" id="gerenciamento">
+      <!-- Reviews -->
+      <section class="section reviews-section" id="avaliacoes">
         <div class="section-inner">
           <div class="section-header">
-            <h2>Gerenciamento</h2>
-            <p>Cadastre, consulte, altere e exclua registros de funcionários e clientes</p>
+            <h2>O que nossos clientes dizem</h2>
+            <p>Veja a opinião de quem já usou nossos serviços</p>
           </div>
-
-          <div class="tabs">
-            <button class="tab" [class.active]="activeTab === 'funcionarios'" (click)="activeTab = 'funcionarios'">Funcionários</button>
-            <button class="tab" [class.active]="activeTab === 'clientes'" (click)="activeTab = 'clientes'">Clientes</button>
-            <button class="tab" [class.active]="activeTab === 'equipamentos'" (click)="activeTab = 'equipamentos'">Equipamentos</button>
-            <button class="tab" [class.active]="activeTab === 'estoque'" (click)="activeTab = 'estoque'">Estoque</button>
+          <div class="reviews-grid">
+            <div class="review-card">
+              <div class="review-stars">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <p class="review-text">"Levei meu celular com a tela quebrada e em 2 dias estava pronto. Preço justo e serviço impecável. Super recomendo!"</p>
+              <div class="review-author">
+                <div class="review-avatar" style="background:#3b82f6;">C</div>
+                <div>
+                  <strong>Carlos Oliveira</strong>
+                  <span>Smartphone — Troca de Tela</span>
+                </div>
+              </div>
+            </div>
+            <div class="review-card">
+              <div class="review-stars">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <p class="review-text">"Notebook não ligava mais. Diagnosticaram rápido, trocaram a fonte e ficou zero. Atendimento nota 10!"</p>
+              <div class="review-author">
+                <div class="review-avatar" style="background:#8b5cf6;">A</div>
+                <div>
+                  <strong>Ana Silva</strong>
+                  <span>Notebook — Reparo de Fonte</span>
+                </div>
+              </div>
+            </div>
+            <div class="review-card">
+              <div class="review-stars">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <p class="review-text">"Instalei um SSD no meu PC e ficou um novo. Instalação rápida e limpa, sem firula. Preço ótimo pelo serviço."</p>
+              <div class="review-author">
+                <div class="review-avatar" style="background:#10b981;">R</div>
+                <div>
+                  <strong>Rafael Costa</strong>
+                  <span>Desktop — Instalação de SSD</span>
+                </div>
+              </div>
+            </div>
           </div>
-
-          @if (activeTab === 'funcionarios') {
-            <app-funcionarios-crud/>
-          } @else if (activeTab === 'clientes') {
-            <app-clientes-crud/>
-          } @else if (activeTab === 'equipamentos') {
-            <app-equipamentos-crud/>
-          } @else if (activeTab === 'estoque') {
-            <app-estoque-crud/>
-          }
         </div>
       </section>
 
       <!-- Footer -->
-      <footer class="footer">
+      <footer class="footer" id="contato">
         <div class="section-inner">
           <div class="footer-grid">
             <div class="footer-brand">
-              <div class="footer-logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                  <span>Prime <span class="accent">Assistência</span></span>
-              </div>
-              <p class="footer-desc">Prime Assistência — especializada em reparos de eletrônicos. Qualidade e confiança desde 2024.</p>
-              <div class="footer-social">
-                <a href="https://instagram.com" target="_blank" aria-label="Instagram">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/></svg>
-                </a>
-                <a href="#" aria-label="Facebook">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </a>
-              </div>
+              <a class="footer-logo" routerLink="/">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                Prime <span class="accent">Assistência</span>
+              </a>
+              <p>Assistência técnica especializada em eletrônicos com qualidade e garantia.</p>
             </div>
-            <div>
-              <h4>Serviços</h4>
-              <a (click)="scrollPara('servicos')">Smartphones & Tablets</a>
-              <a (click)="scrollPara('servicos')">Notebooks</a>
-              <a (click)="scrollPara('servicos')">Desktops & PCs</a>
-              <a (click)="scrollPara('servicos')">Consoles</a>
-              <a (click)="scrollPara('servicos')">TVs & Monitores</a>
-            </div>
-            <div>
-              <h4>Gerenciamento</h4>
-              <a routerLink="/area-tecnico">Área do Técnico</a>
-              <a (click)="scrollPara('gerenciamento'); activeTab='funcionarios'">Funcionários</a>
-              <a (click)="scrollPara('gerenciamento'); activeTab='clientes'">Clientes</a>
-            </div>
-            <div>
+            <div class="footer-contact-col">
               <h4>Contato</h4>
-              <span class="footer-contact">(11) 99999-9999</span>
-              <span class="footer-contact">contato&#64;assistenciatecnica.com.br</span>
-              <span class="footer-hours-title">Horário</span>
-              <span>Seg a Sex: 09h — 18h</span>
-              <span>Sáb: 09h — 13h</span>
+              <div class="fcontact-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Rua das Tecnologias, 1234 — Centro, São Paulo - SP</span>
+              </div>
+              <div class="fcontact-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <span>(11) 98765-4321</span>
+              </div>
+              <div class="fcontact-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <span>contato&#64;primeassistencia.com.br</span>
+              </div>
+            </div>
+            <div class="footer-hours">
+              <h4>Horário de Funcionamento</h4>
+              <p>Segunda a Sexta: 09h às 18h<br>Sábados e Domingos: Fechado</p>
+              <div class="footer-social">
+                <a href="#" aria-label="Facebook">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="#" aria-label="Instagram">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                </a>
+                <a href="#" aria-label="LinkedIn">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+              </div>
             </div>
           </div>
           <div class="footer-bottom">
@@ -309,276 +245,153 @@ import { OrdemServico } from '../../core/types/types';
     .landing { width: 100%; }
 
     .hero {
-      position: relative; overflow: hidden;
-      padding: 140px 24px 120px; text-align: center;
-      background: #0a0a12;
+      padding: 120px 24px 80px;
+      background: linear-gradient(135deg, var(--bg) 0%, rgba(10,10,18,.95) 100%);
+      overflow: hidden;
     }
-    .hero-bg {
-      position: absolute; inset: 0;
-      background: url('https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=800&fit=crop') center/cover;
-      opacity: .25;
-      pointer-events: none;
+    .hero-inner { max-width: 1120px; margin: 0 auto; }
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
     }
-    .hero-bg::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(10,10,18,.85) 0%, rgba(10,10,18,.6) 50%, rgba(10,10,18,.9) 100%);
-    }
-    .hero-content { position: relative; max-width: 720px; margin: 0 auto; }
-    .hero-badge {
-      display: inline-block; padding: 8px 20px; margin-bottom: 24px;
-      background: linear-gradient(135deg, rgba(59,130,246,.15), rgba(59,130,246,.05));
-      color: var(--primary); font-size: .8rem; font-weight: 600;
-      border-radius: 20px; letter-spacing: .03em;
-      border: 1px solid rgba(59,130,246,.15);
-    }
-    h1 { font-size: 3rem; font-weight: 800; color: var(--text); margin-bottom: 16px; letter-spacing: -.03em; line-height: 1.1; }
-    .hero-sub { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 8px; }
-    .hero-desc { font-size: 1rem; color: var(--text-muted); opacity: .75; margin-bottom: 40px; }
-    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-    .btn-primary-lg {
+    @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
+    .hero-text h1 { font-size: 2.6rem; font-weight: 800; color: var(--text); line-height: 1.15; letter-spacing: -.03em; margin-bottom: 20px; }
+    .hero-text .accent { color: var(--primary); }
+    .hero-sub { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 8px; }
+    .hero-desc { font-size: .95rem; color: var(--text-muted); opacity: .75; margin-bottom: 32px; }
+    .btn-cta {
       display: inline-flex; align-items: center; gap: 10px;
       padding: 16px 32px; font-size: 1rem; font-weight: 600;
       border-radius: 12px; text-decoration: none; cursor: pointer;
-      background: linear-gradient(135deg, var(--primary), #6366f1);
-      color: #fff; border: none;
-      transition: all .25s; box-shadow: 0 4px 20px rgba(59,130,246,.25);
+      background: #22c55e; color: #fff; border: none;
+      transition: all .25s;
     }
-    .btn-primary-lg:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,.35); }
+    .btn-cta:hover { background: #16a34a; transform: translateY(-2px); }
+
+    .hero-visual { position: relative; }
+    .hero-box {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border-radius: 20px; padding: 40px;
+      transform: rotate(1deg); transition: transform .4s;
+    }
+    .hero-box:hover { transform: rotate(0deg); }
+    .hero-float-icon {
+      position: absolute; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    }
+    .hero-float-icon.left { top: 16px; left: -16px; }
+    .hero-float-icon.right { bottom: 32px; right: -16px; }
 
     .stats {
       padding: 36px 24px; background: var(--surface);
       border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     }
+    .section-inner { max-width: 1120px; margin: 0 auto; }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
-    .stat-item { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+    .stat-item { padding: 16px; border-radius: 12px; border: 1px solid var(--border); transition: all .3s; }
+    .stat-item:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); }
     .stat-num { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
     .stat-label { font-size: .8rem; color: var(--text-muted); }
-    .stat-dynamic {
-      padding: 16px; border-radius: 12px;
-      background: linear-gradient(135deg, rgba(59,130,246,.04), rgba(99,102,241,.02));
-      border: 1px solid rgba(59,130,246,.08);
-      transition: all .3s;
-    }
-    .stat-dynamic:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(99,102,241,.04)); }
     @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .section { padding: 96px 24px; }
     .section:nth-child(even) { background: var(--surface); }
-    .section-inner { max-width: 1120px; margin: 0 auto; }
     .section-header { text-align: center; margin-bottom: 56px; }
-    .section-header h2 { font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -.02em; }
+    .section-header h2 { font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 12px; }
     .section-header p { color: var(--text-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
+    .section-tagline { color: var(--text-muted); font-size: 1rem; margin-top: 8px; font-style: italic; }
 
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    @media (max-width: 860px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .services-grid { grid-template-columns: 1fr; } }
     .service-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-      transition: all .3s cubic-bezier(.4,0,.2,1);
-      position: relative;
+      border-radius: 14px; padding: 24px;
+      transition: all .25s;
     }
-    .service-card::before {
-      content: ''; position: absolute; inset: 0;
-      border-radius: 16px; opacity: 0;
-      background: linear-gradient(180deg, rgba(59,130,246,.03) 0%, transparent 100%);
-      transition: opacity .3s;
-      pointer-events: none;
-    }
-    .service-card:hover {
-      border-color: rgba(59,130,246,.3); transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,.3);
-    }
-    .service-card:hover::before { opacity: 1; }
-    .card-img {
-      height: 140px; display: flex; align-items: center; justify-content: center;
-      background-size: cover; background-position: center;
-      position: relative; overflow: hidden;
-    }
-    .card-img-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(10,10,18,.3) 0%, rgba(10,10,18,.7) 100%);
-    }
-    .card-img svg { position: relative; z-index: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
-    .service-card:hover .card-img { transform: scale(1.02); }
-    .service-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); padding: 20px 24px 8px; }
-    .service-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.6; padding: 0 24px; }
-    .service-price { display: block; padding: 14px 24px 20px; font-size: .95rem; font-weight: 700; color: var(--primary); }
-
-    .price-section { background: var(--surface); }
-    .price-table-wrap { overflow-x: auto; max-width: 720px; margin: 0 auto; }
-    .price-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .88rem; overflow: hidden; border-radius: 12px; border: 1px solid var(--border); }
-    .price-table thead tr { background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(59,130,246,.04)); }
-    .price-table th { color: var(--text); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; padding: 16px 20px; text-align: left; }
-    .price-table td { padding: 14px 20px; color: var(--text); border-top: 1px solid var(--border); }
-    .price-table tbody tr { transition: background .2s; }
-    .price-table tbody tr:hover { background: var(--surface-hover); }
-    .price-val { font-weight: 700; color: var(--primary); white-space: nowrap; text-align: right; }
-    .price-note { text-align: center; color: var(--text-muted); font-size: .8rem; margin-top: 24px; }
-
-    .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
-    .how-step {
-      text-align: center; padding: 40px 28px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; position: relative;
-      transition: all .3s;
-    }
-    .how-step:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); }
-    .how-num {
-      width: 44px; height: 44px; margin: 0 auto 16px;
-      background: linear-gradient(135deg, var(--primary), #6366f1);
-      color: #fff; border-radius: 12px;
+    .service-card:hover { border-color: rgba(59,130,246,.25); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+    .service-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; font-weight: 700;
-      box-shadow: 0 4px 12px rgba(59,130,246,.2);
+      margin-bottom: 16px;
     }
-    .how-icon { margin-bottom: 16px; }
-    .how-step h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-    .how-step p { font-size: .87rem; color: var(--text-muted); line-height: 1.6; }
+    .service-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .service-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.6; }
 
-    .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
-    .why-card {
-      text-align: center; padding: 36px 24px;
+    .services-banner {
+      margin-top: 36px;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border-radius: 16px; padding: 32px 40px; text-align: center; color: #fff;
+    }
+    .services-banner h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+    .services-banner p { font-size: .95rem; opacity: .9; max-width: 720px; margin: 0 auto 12px; line-height: 1.6; }
+    .services-banner strong { font-size: 1.05rem; }
+
+    .features {
+      padding: 96px 24px;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: #fff;
+    }
+    .features .section-header h2 { color: #fff; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    @media (max-width: 640px) { .features-grid { grid-template-columns: 1fr; } }
+    .feature-card { text-align: center; }
+    .feature-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .feature-card h3 { font-size: 1.35rem; font-weight: 700; margin-bottom: 12px; }
+    .feature-card p { font-size: .95rem; opacity: .8; line-height: 1.6; max-width: 300px; margin: 0 auto; }
+
+    .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    @media (max-width: 860px) { .reviews-grid { grid-template-columns: 1fr; } }
+    .review-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; transition: all .3s;
+      border-radius: 14px; padding: 28px; transition: all .25s;
+      display: flex; flex-direction: column;
     }
-    .why-card:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); }
-    .why-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; transition: transform .3s; }
-    .why-card:hover .why-icon { transform: scale(1.1); }
-    .why-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-    .why-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.6; }
-
-    .crud-section .section-header { margin-bottom: 32px; }
-
-    .tabs {
-      display: flex; gap: 0; margin-bottom: 28px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 4px; overflow: hidden;
+    .review-card:hover { border-color: rgba(59,130,246,.2); transform: translateY(-2px); }
+    .review-stars { display: flex; gap: 2px; margin-bottom: 16px; }
+    .review-text { font-size: .88rem; color: var(--text); line-height: 1.7; flex: 1; margin-bottom: 20px; font-style: italic; }
+    .review-author { display: flex; align-items: center; gap: 12px; }
+    .review-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 1rem; flex-shrink: 0;
     }
-    .tab {
-      flex: 1; padding: 12px 24px;
-      background: transparent; color: var(--text-muted);
-      border: none; cursor: pointer; font-size: .9rem; font-weight: 600;
-      border-radius: 8px; transition: all .25s;
-    }
-    .tab:hover { color: var(--text); background: var(--surface-hover); }
-    .tab.active { color: #fff; background: var(--primary); }
-
-    .crud-content { display: flex; flex-direction: column; gap: 24px; }
-    .crud-bar { display: flex; gap: 8px; }
-    .form-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px;
-      border-left: 3px solid var(--primary);
-    }
-    .form-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 16px; }
-    .form-actions { display: flex; gap: 10px; }
-
-    .consult-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px;
-      border-left: 3px solid rgba(59,130,246,.4);
-    }
-    .consult-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
-    .scope-buttons { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-    .scope-btn {
-      padding: 7px 18px; font-size: .8rem; font-weight: 600;
-      background: var(--surface-hover); color: var(--text-muted);
-      border: 1px solid var(--border); border-radius: 20px;
-      cursor: pointer; transition: all .2s;
-    }
-    .scope-btn:hover { color: var(--text); border-color: var(--text-muted); }
-    .scope-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .consult-row { display: flex; gap: 10px; align-items: center; }
-    .consult-result {
-      margin-top: 14px; background: var(--surface-hover);
-      border-radius: 8px; padding: 16px 20px;
-      border: 1px solid var(--border);
-    }
-    .consult-result p { margin-bottom: 6px; font-size: .9rem; }
-    .loading { margin-top: 8px; font-size: .85rem; color: var(--text-muted); font-style: italic; }
-
-    .table-wrapper {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; overflow: hidden;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 14px 18px; text-align: left; font-size: .88rem; }
-    th {
-      background: var(--surface-hover); font-weight: 600;
-      color: var(--text-muted); text-transform: uppercase;
-      font-size: .72rem; letter-spacing: .6px;
-      border-bottom: 1px solid var(--border);
-    }
-    td { color: var(--text); border-bottom: 1px solid var(--border); }
-    tbody tr { transition: background .15s; }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: rgba(59,130,246,.03); }
-    .actions { display: flex; gap: 8px; }
-    .empty { padding: 48px; text-align: center; color: var(--text-muted); }
-    .err { color: var(--danger); font-size: .9rem; padding: 10px 0; display: flex; align-items: center; gap: 6px; }
-    .err::before { content: '⚠'; }
-    .success {
-      color: var(--success); font-size: .9rem; padding: 10px 16px; font-weight: 500;
-      background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.15);
-      border-radius: 8px; display: flex; align-items: center; gap: 6px;
-    }
-    .success::before { content: '✓'; font-weight: 700; }
-
-    .inp {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 11px 16px;
-      color: var(--text); font-size: .9rem;
-      outline: none; transition: all .2s; width: 100%;
-    }
-    .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
-
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 24px; background: var(--primary); color: #fff;
-      border: none; border-radius: 8px; font-size: .9rem; font-weight: 600;
-      cursor: pointer; transition: all .2s; white-space: nowrap;
-    }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    .btn-sec {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 24px; background: var(--surface-hover); color: var(--text);
-      border: none; border-radius: 8px; font-size: .9rem; font-weight: 500;
-      cursor: pointer; transition: all .2s; white-space: nowrap;
-    }
-    .btn-sec:hover { background: var(--border); }
-    .btn-sm {
-      padding: 7px 16px; font-size: .8rem; font-weight: 600;
-      border: none; border-radius: 6px; cursor: pointer; transition: all .2s;
-    }
-    .btn-blue { background: var(--primary); color: #fff; }
-    .btn-blue:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn-red { background: var(--danger); color: #fff; }
-    .btn-red:hover { background: var(--danger-hover); transform: translateY(-1px); }
+    .review-author strong { display: block; font-size: .88rem; color: var(--text); }
+    .review-author span { font-size: .78rem; color: var(--text-muted); }
 
     .footer {
       padding: 60px 24px 36px;
       background: linear-gradient(180deg, var(--surface) 0%, #0d0d14 100%);
       border-top: 1px solid var(--border);
     }
-    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 40px; margin-bottom: 36px; }
-    .footer-logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+    .footer-grid { display: grid; grid-template-columns: 1.4fr 1.2fr 1.4fr; gap: 48px; margin-bottom: 36px; }
+    @media (max-width: 860px) { .footer-grid { grid-template-columns: 1fr; gap: 32px; } }
+    .footer-logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: var(--text); text-decoration: none; margin-bottom: 16px; }
     .footer-logo .accent { color: var(--primary); }
-    .footer-desc { font-size: .87rem; color: var(--text-muted); line-height: 1.6; max-width: 280px; }
-    .footer-social { display: flex; gap: 10px; margin-top: 20px; }
-    .footer-social a { width: 40px; height: 40px; border-radius: 10px; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all .2s; cursor: pointer; }
-    .footer-social a:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
-    .footer h4 { font-size: .82rem; font-weight: 700; color: var(--text); margin-bottom: 16px; text-transform: uppercase; letter-spacing: .08em; }
-    .footer a, .footer span { display: block; font-size: .87rem; color: var(--text-muted); padding: 4px 0; text-decoration: none; cursor: pointer; transition: color .2s; }
-    .footer a:hover { color: var(--primary); }
-    .footer-contact { font-weight: 600; color: var(--text); }
-    .footer-hours-title { font-weight: 600; color: var(--text); margin-top: 16px; display: block; }
+    .footer-brand p { font-size: .88rem; color: var(--text-muted); line-height: 1.6; max-width: 300px; }
+    .footer h4 { font-size: .8rem; font-weight: 700; color: var(--text); margin-bottom: 16px; text-transform: uppercase; letter-spacing: .08em; }
+    .fcontact-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: .85rem; color: var(--text-muted); }
+    .fcontact-item svg { flex-shrink: 0; margin-top: 2px; }
+    .footer-hours p { font-size: .88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    .footer-social { display: flex; gap: 10px; }
+    .footer-social a {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); text-decoration: none;
+      transition: all .2s;
+    }
+    .footer-social a:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
     .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; text-align: center; font-size: .82rem; color: var(--text-muted); }
   `]
 })
 export class HomeComponent implements OnInit {
-  activeTab = 'funcionarios';
-
   stats = {
     totalOS: 0,
     clientesAtivos: 0,
@@ -609,10 +422,5 @@ export class HomeComponent implements OnInit {
     this.equipamentosService.listar().subscribe(e => {
       this.stats.equipamentos = e.length;
     });
-  }
-
-  scrollPara(id: string) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }

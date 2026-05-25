@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientesService } from '../../core/services/clientes.service';
 import { Cliente } from '../../core/types/types';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-clientes-crud',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
       <button class="btn-primary" (click)="showForm = !showForm">
@@ -85,7 +86,7 @@ import { Cliente } from '../../core/types/types';
                 <td>{{ c.email }}</td>
                 <td class="actions">
                   <button class="btn-sm btn-blue" (click)="editar(c)">Editar</button>
-                  <button class="btn-sm btn-red" (click)="arquivar(c)">Arquivar</button>
+                  <button class="btn-sm btn-red" (click)="confirmArquivar(c)">Arquivar</button>
                 </td>
               </tr>
             }
@@ -111,7 +112,7 @@ import { Cliente } from '../../core/types/types';
                   <td>{{ c.nome }}</td>
                   <td>{{ c.cpfCnpj }}</td>
                   <td class="actions">
-                    <button class="btn-sm btn-blue" (click)="reativar(c)">Reativar</button>
+                    <button class="btn-sm btn-blue" (click)="confirmReativar(c)">Reativar</button>
                   </td>
                 </tr>
               }
@@ -120,6 +121,15 @@ import { Cliente } from '../../core/types/types';
         </div>
       }
     </details>
+
+    <app-confirm-dialog
+      [show]="confirm.show"
+      [title]="confirm.title"
+      [text]="confirm.text"
+      [loading]="confirm.loading"
+      (confirmar)="confirmOk()"
+      (cancelar)="confirmCancel()"
+    />
 
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
@@ -227,6 +237,7 @@ export class ClientesCrudComponent implements OnInit {
   erro = '';
   sucesso = '';
   erroGeral = '';
+  confirm = { show: false, title: '', text: '', loading: false, item: null as Cliente | null, isReativar: false };
 
   get ativos() { return this.todos.filter(c => c.ativo); }
   get inativos() { return this.todos.filter(c => !c.ativo); }
@@ -326,20 +337,24 @@ export class ClientesCrudComponent implements OnInit {
     this.showForm = true;
   }
 
-  arquivar(c: Cliente) {
-    if (!confirm(`Arquivar "${c.nome}"? O cliente ficará inativo.`)) return;
-    this.service.editar({ ...c, ativo: false }).subscribe({
-      next: () => { this.sucesso = 'Cliente arquivado.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
-      error: () => { this.erroGeral = 'Erro ao arquivar.'; }
+  confirmArquivar(c: Cliente) {
+    this.confirm = { show: true, title: 'Arquivar Cliente', text: `Arquivar "${c.nome}"? O cliente ficará inativo.`, loading: false, item: c, isReativar: false };
+  }
+  confirmReativar(c: Cliente) {
+    this.confirm = { show: true, title: 'Reativar Cliente', text: `Reativar "${c.nome}"?`, loading: false, item: c, isReativar: true };
+  }
+  confirmOk() {
+    const c = this.confirm.item; if (!c?.id) return; this.confirm.loading = true;
+    this.service.editar({ ...c, ativo: this.confirm.isReativar }).subscribe({
+      next: () => {
+        this.confirm = { show: false, title: '', text: '', loading: false, item: null, isReativar: false };
+        this.sucesso = this.confirm.isReativar ? 'Cliente reativado.' : 'Cliente arquivado.';
+        setTimeout(() => this.sucesso = '', 3000); this.listar();
+      },
+      error: () => { this.confirm.show = false; this.erroGeral = 'Erro ao arquivar.'; }
     });
   }
-
-  reativar(c: Cliente) {
-    this.service.editar({ ...c, ativo: true }).subscribe({
-      next: () => { this.sucesso = 'Cliente reativado.'; setTimeout(() => this.sucesso = '', 3000); this.listar(); },
-      error: () => { this.erroGeral = 'Erro ao reativar.'; }
-    });
-  }
+  confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null, isReativar: false }; }
 
   consultar() {
     this.resultado = null;
