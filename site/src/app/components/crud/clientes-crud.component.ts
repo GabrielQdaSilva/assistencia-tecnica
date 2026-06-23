@@ -21,15 +21,33 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       <div class="form-card">
         <h3>{{ editId ? 'Editar Cliente' : 'Novo Cliente' }}</h3>
         <div class="form-grid">
-          <input [(ngModel)]="form.nome" placeholder="Nome" class="inp"/>
-          <select [(ngModel)]="form.tipo" class="inp">
-            <option value="PF">Pessoa Física</option>
-            <option value="PJ">Pessoa Jurídica</option>
-          </select>
-          <input [(ngModel)]="form.cpfCnpj" [placeholder]="form.tipo === 'PJ' ? 'CNPJ' : 'CPF'" class="inp"/>
-          <input [(ngModel)]="form.telefone" placeholder="Telefone" class="inp"/>
-          <input [(ngModel)]="form.email" placeholder="Email" class="inp"/>
-          <input [(ngModel)]="form.endereco" placeholder="Endereço" class="inp"/>
+          <label class="field">
+            <span class="field-label">Nome</span>
+            <input [(ngModel)]="form.nome" placeholder="Nome" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Tipo</span>
+            <select [(ngModel)]="form.tipo" class="inp">
+              <option value="PF">Pessoa Física</option>
+              <option value="PJ">Pessoa Jurídica</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">{{ form.tipo === 'PJ' ? 'CNPJ' : 'CPF' }}</span>
+            <input [(ngModel)]="form.cpfCnpj" [placeholder]="form.tipo === 'PJ' ? 'CNPJ' : 'CPF'" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Telefone</span>
+            <input [(ngModel)]="form.telefone" placeholder="Telefone" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Email</span>
+            <input [(ngModel)]="form.email" placeholder="Email" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Endereço</span>
+            <input [(ngModel)]="form.endereco" placeholder="Endereço" class="inp"/>
+          </label>
         </div>
         <button class="btn-primary" [disabled]="loading" (click)="salvar()">
           @if (loading) { Salvando... } @else { Salvar }

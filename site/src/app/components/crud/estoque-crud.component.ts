@@ -30,21 +30,39 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       <div class="form-card">
         <h3>{{ editId ? 'Editar Peça' : 'Nova Peça' }}</h3>
         <div class="form-grid">
-          <input [(ngModel)]="form.nome" placeholder="Nome da peça" class="inp"/>
-          <select [(ngModel)]="form.categoria" class="inp">
-            <option value="">Categoria</option>
-            <option value="Tela">Tela</option>
-            <option value="Bateria">Bateria</option>
-            <option value="Fonte">Fonte</option>
-            <option value="Armazenamento">Armazenamento</option>
-            <option value="Memória">Memória</option>
-            <option value="Consumível">Consumível</option>
-            <option value="Outro">Outro</option>
-          </select>
-          <input [(ngModel)]="form.quantidade" type="number" placeholder="Quantidade" class="inp"/>
-          <input [(ngModel)]="form.estoqueMinimo" type="number" placeholder="Estoque mínimo" class="inp"/>
-          <input [(ngModel)]="form.valorCusto" type="number" placeholder="Custo (R$)" class="inp"/>
-          <input [(ngModel)]="form.valorVenda" type="number" placeholder="Venda (R$)" class="inp"/>
+          <label class="field">
+            <span class="field-label">Peça</span>
+            <input [(ngModel)]="form.nome" placeholder="Nome da peça" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Categoria</span>
+            <select [(ngModel)]="form.categoria" class="inp">
+              <option value="">Categoria</option>
+              <option value="Tela">Tela</option>
+              <option value="Bateria">Bateria</option>
+              <option value="Fonte">Fonte</option>
+              <option value="Armazenamento">Armazenamento</option>
+              <option value="Memória">Memória</option>
+              <option value="Consumível">Consumível</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Quantidade</span>
+            <input [(ngModel)]="form.quantidade" type="number" placeholder="Quantidade" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Estoque Mínimo</span>
+            <input [(ngModel)]="form.estoqueMinimo" type="number" placeholder="Estoque mínimo" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Custo (R$)</span>
+            <input [(ngModel)]="form.valorCusto" type="number" placeholder="Custo (R$)" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Venda (R$)</span>
+            <input [(ngModel)]="form.valorVenda" type="number" placeholder="Venda (R$)" class="inp"/>
+          </label>
         </div>
         <div class="form-actions">
           <button class="btn-primary" [disabled]="loading" (click)="salvar()">

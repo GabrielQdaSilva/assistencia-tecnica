@@ -21,13 +21,31 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       <div class="form-card">
         <h3>{{ editId ? 'Editar Funcionário' : 'Novo Funcionário' }}</h3>
         <div class="form-grid">
-          <input [(ngModel)]="form.nome" placeholder="Nome" class="inp"/>
-          <input [(ngModel)]="form.cargo" placeholder="Cargo" class="inp"/>
-          <input [(ngModel)]="form.telefone" placeholder="Telefone" class="inp"/>
-          <input [(ngModel)]="form.email" placeholder="Email" class="inp"/>
-          <input [(ngModel)]="form.salario" type="number" placeholder="Salário (R$)" class="inp"/>
+          <label class="field">
+            <span class="field-label">Nome</span>
+            <input [(ngModel)]="form.nome" placeholder="Nome" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Cargo</span>
+            <input [(ngModel)]="form.cargo" placeholder="Cargo" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Telefone</span>
+            <input [(ngModel)]="form.telefone" placeholder="Telefone" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Email</span>
+            <input [(ngModel)]="form.email" placeholder="Email" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Salário</span>
+            <input [(ngModel)]="form.salario" type="number" placeholder="Salário (R$)" class="inp"/>
+          </label>
           @if (!editId) {
-            <input [(ngModel)]="form.senha" type="password" placeholder="Senha (admin)" class="inp"/>
+            <label class="field">
+              <span class="field-label">Senha</span>
+              <input [(ngModel)]="form.senha" type="password" placeholder="Senha (admin)" class="inp"/>
+            </label>
           }
         </div>
         <button class="btn-primary" [disabled]="loading" (click)="salvar()">

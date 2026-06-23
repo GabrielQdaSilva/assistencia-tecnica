@@ -199,7 +199,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
               </button>
             </div>
-            <button class="btn-primary" (click)="showForm = !showForm">
+            <button class="btn-primary" (click)="toggleForm()">
               {{ showForm ? 'Cancelar' : '+ Nova Ordem' }}
             </button>
           </div>
@@ -209,50 +209,95 @@ import { ChamadosService } from '../../core/services/chamados.service';
           <div class="form-card">
             <h3>{{ editId ? 'Editar Ordem #' + editId : 'Nova Ordem de Serviço' }}</h3>
             <div class="form-grid">
-              <select [(ngModel)]="form.tecnicoId" class="inp">
-                <option [ngValue]="0" disabled>Selecione um técnico</option>
-                @for (f of funcionarios; track f.id) {
-                  <option [ngValue]="f.id">{{ f.nome }} ({{ f.cargo }})</option>
-                }
-              </select>
-              <select [(ngModel)]="form.clienteId" class="inp">
-                <option [ngValue]="0" disabled>Selecione um cliente</option>
-                @for (c of clientes; track c.id) {
-                  <option [ngValue]="c.id">{{ c.nome }}</option>
-                }
-              </select>
-              <select [(ngModel)]="form.equipamentoId" class="inp">
-                <option [ngValue]="0" disabled>Selecione equipamento</option>
-                @for (e of equipamentos; track e.id) {
-                  <option [ngValue]="e.id">{{ e.marca }} {{ e.modelo }} - {{ e.clienteNome }}</option>
-                }
-              </select>
-              <input [(ngModel)]="form.aparelho" placeholder="Aparelho (ex: iPhone 12)" class="inp"/>
-              <input [(ngModel)]="form.tipoAparelho" placeholder="Tipo (smartphone, notebook...)" class="inp"/>
-              <select [(ngModel)]="form.prioridade" class="inp">
-                <option value="Normal">Prioridade: Normal</option>
-                <option value="Baixa">Prioridade: Baixa</option>
-                <option value="Alta">Prioridade: Alta</option>
-                <option value="Urgente">Prioridade: Urgente</option>
-              </select>
-              <select [(ngModel)]="form.status" class="inp">
-                <option value="Na Fila">Na Fila</option>
-                <option value="Em Análise">Em Análise</option>
-                <option value="Orçamento Aprovado">Orçamento Aprovado</option>
-                <option value="Pronto">Pronto</option>
-                <option value="Entregue">Entregue</option>
-              </select>
-              <input [(ngModel)]="form.tempoEstimado" type="number" placeholder="Tempo estimado (dias)" class="inp"/>
-              <input [(ngModel)]="form.garantiaDias" type="number" placeholder="Garantia (dias)" class="inp"/>
+              <label class="field">
+                <span class="field-label">Técnico</span>
+                <select [(ngModel)]="form.tecnicoId" class="inp">
+                  <option [ngValue]="0" disabled>Selecione...</option>
+                  @for (f of funcionarios; track f.id) {
+                    <option [ngValue]="f.id">{{ f.nome }} ({{ f.cargo }})</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Cliente</span>
+                <select [(ngModel)]="form.clienteId" class="inp">
+                  <option [ngValue]="0" disabled>Selecione...</option>
+                  @for (c of clientes; track c.id) {
+                    <option [ngValue]="c.id">{{ c.nome }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Equipamento</span>
+                <select [(ngModel)]="form.equipamentoId" class="inp">
+                  <option [ngValue]="0" disabled>Selecione...</option>
+                  @for (e of equipamentos; track e.id) {
+                    <option [ngValue]="e.id">{{ e.marca }} {{ e.modelo }} - {{ e.clienteNome }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Aparelho</span>
+                <input [(ngModel)]="form.aparelho" placeholder="ex: iPhone 12" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Tipo</span>
+                <input [(ngModel)]="form.tipoAparelho" placeholder="ex: smartphone, notebook" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Prioridade</span>
+                <select [(ngModel)]="form.prioridade" class="inp">
+                  <option value="Normal">Normal</option>
+                  <option value="Baixa">Baixa</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Estado</span>
+                <select [(ngModel)]="form.status" class="inp">
+                  <option value="Na Fila">Na Fila</option>
+                  <option value="Em Análise">Em Análise</option>
+                  <option value="Orçamento Aprovado">Orçamento Aprovado</option>
+                  <option value="Pronto">Pronto</option>
+                  <option value="Entregue">Entregue</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Prazo</span>
+                <input [(ngModel)]="form.tempoEstimado" type="number" placeholder="dias" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Garantia</span>
+                <input [(ngModel)]="form.garantiaDias" type="number" placeholder="dias" class="inp"/>
+              </label>
             </div>
-            <textarea [(ngModel)]="form.defeito" placeholder="Defeito relatado" class="inp inp-area" rows="2"></textarea>
-            <textarea [(ngModel)]="form.diagnosticos" placeholder="Diagnóstico técnico" class="inp inp-area" rows="2"></textarea>
+            <label class="field field-area">
+              <span class="field-label">Defeito relatado</span>
+              <textarea [(ngModel)]="form.defeito" placeholder="Descreva o problema relatado pelo cliente" class="inp inp-area" rows="2"></textarea>
+            </label>
+            <label class="field field-area">
+              <span class="field-label">Diagnóstico técnico</span>
+              <textarea [(ngModel)]="form.diagnosticos" placeholder="Resultado da análise técnica" class="inp inp-area" rows="2"></textarea>
+            </label>
             <div class="form-grid form-grid-3">
-              <input [(ngModel)]="form.valorServico" type="number" placeholder="Valor mão de obra" class="inp"/>
-              <input [(ngModel)]="form.valorPecas" type="number" placeholder="Valor peças" class="inp"/>
-              <input [value]="(form.valorServico ?? 0) + (form.valorPecas ?? 0) || ''" type="text" placeholder="Total" class="inp" readonly/>
+              <label class="field">
+                <span class="field-label">Mão de obra</span>
+                <input [(ngModel)]="form.valorServico" type="number" placeholder="R$ 0,00" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Peças</span>
+                <input [(ngModel)]="form.valorPecas" type="number" placeholder="R$ 0,00" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Total</span>
+                <input [value]="(form.valorServico ?? 0) + (form.valorPecas ?? 0) || ''" type="text" placeholder="R$ 0,00" class="inp" readonly/>
+              </label>
             </div>
-            <textarea [(ngModel)]="form.observacoes" placeholder="Observações" class="inp inp-area" rows="2"></textarea>
+            <label class="field field-area">
+              <span class="field-label">Observações</span>
+              <textarea [(ngModel)]="form.observacoes" placeholder="Informações adicionais" class="inp inp-area" rows="2"></textarea>
+            </label>
               <div class="form-actions">
                 <button class="btn-primary" [disabled]="saving" (click)="salvar()">
                   @if (saving) { Salvando... } @else { Salvar }
@@ -531,6 +576,9 @@ import { ChamadosService } from '../../core/services/chamados.service';
       gap: 14px; margin-bottom: 14px;
     }
     .form-grid-3 { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-area { margin-top: 12px; }
+    .field-label { font-size: .75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
     .form-actions { display: flex; gap: 10px; margin-top: 16px; }
 
     .cell-defeito { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -773,10 +821,19 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     this.analytics.emGarantia = this.ordens.filter(o => o.garantiaFim && new Date(o.garantiaFim) > new Date()).length;
   }
 
+  toggleForm() {
+    this.showForm = !this.showForm;
+    if (this.showForm) {
+      this.editId = null;
+      this.form = { prioridade: 'Normal', status: 'Na Fila' };
+      this.showTimeline = false;
+    }
+  }
+
   cancelarForm() {
     this.showForm = false;
     this.editId = null;
-    this.form = {};
+    this.form = { prioridade: 'Normal', status: 'Na Fila' };
     this.showTimeline = false;
   }
 

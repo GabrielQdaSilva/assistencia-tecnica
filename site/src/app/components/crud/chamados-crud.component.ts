@@ -26,14 +26,23 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
         <div class="form-card">
           <h3>{{ editId ? 'Editar Chamado' : 'Novo Chamado' }}</h3>
           <div class="form-grid">
-            <input [(ngModel)]="form.descricao" placeholder="Descrição" class="inp"/>
-            <select [(ngModel)]="form.status" class="inp">
-              <option value="Aberto">Aberto</option>
-              <option value="Em Andamento">Em Andamento</option>
-              <option value="Resolvido">Resolvido</option>
-              <option value="Fechado">Fechado</option>
-            </select>
-            <input [(ngModel)]="form.observacoes" placeholder="Observações" class="inp"/>
+            <label class="field">
+              <span class="field-label">Descrição</span>
+              <input [(ngModel)]="form.descricao" placeholder="Descrição" class="inp"/>
+            </label>
+            <label class="field">
+              <span class="field-label">Status</span>
+              <select [(ngModel)]="form.status" class="inp">
+                <option value="Aberto">Aberto</option>
+                <option value="Em Andamento">Em Andamento</option>
+                <option value="Resolvido">Resolvido</option>
+                <option value="Fechado">Fechado</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Observações</span>
+              <input [(ngModel)]="form.observacoes" placeholder="Observações" class="inp"/>
+            </label>
           </div>
           <div class="form-actions">
             <button class="btn-primary" [disabled]="loading" (click)="salvar()">
@@ -83,8 +92,8 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
         }
       </div>
 
-      @if (sucesso) { <div class="success-msg">{{ sucesso }}</div> }
-      @if (!showForm && erroGeral) { <div class="err-msg">{{ erroGeral }}</div> }
+      @if (sucesso) { <p class="success">{{ sucesso }}</p> }
+      @if (!showForm && erroGeral) { <p class="err">{{ erroGeral }}</p> }
       @if (erro) { <p class="err">{{ erro }}</p> }
 
       <!-- Modal de edição com conversa -->
@@ -145,7 +154,26 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     </div>
   `,
   styles: [`
-    .chamados-crud { margin-bottom: 24px; }
+    :host { display: flex; flex-direction: column; gap: 24px; }
+    .chamados-crud { display: flex; flex-direction: column; gap: 24px; }
+    .crud-bar { display: flex; gap: 8px; }
+    .form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      border-left: 3px solid var(--primary);
+    }
+    .form-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .form-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-sec { padding: 11px 24px; background: var(--surface-hover); color: var(--text); border: none; border-radius: 8px; font-size: .9rem; font-weight: 500; cursor: pointer; }
+    .btn-sec:hover { background: var(--border); }
+    .consult-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      border-left: 3px solid rgba(59,130,246,.4);
+    }
+    .consult-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .consult-row { display: flex; gap: 10px; align-items: center; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; }
     .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 640px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(0,0,0,.5); }
     .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }

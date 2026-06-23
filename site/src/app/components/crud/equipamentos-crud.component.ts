@@ -22,18 +22,36 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       <div class="form-card">
         <h3>{{ editId ? 'Editar Equipamento' : 'Novo Equipamento' }}</h3>
         <div class="form-grid">
-          <select [(ngModel)]="form.clienteId" class="inp">
-            <option [ngValue]="0" disabled>Selecione o cliente</option>
-            @for (c of clientes; track c.id) {
-              <option [ngValue]="c.id">{{ c.nome }}</option>
-            }
-          </select>
-          <input [(ngModel)]="form.marca" placeholder="Marca" class="inp"/>
-          <input [(ngModel)]="form.modelo" placeholder="Modelo" class="inp"/>
-          <input [(ngModel)]="form.serial" placeholder="Nº Série" class="inp"/>
-          <input [(ngModel)]="form.imei" placeholder="IMEI / Patrimônio" class="inp"/>
+          <label class="field">
+            <span class="field-label">Cliente</span>
+            <select [(ngModel)]="form.clienteId" class="inp">
+              <option [ngValue]="0" disabled>Selecione o cliente</option>
+              @for (c of clientes; track c.id) {
+                <option [ngValue]="c.id">{{ c.nome }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Marca</span>
+            <input [(ngModel)]="form.marca" placeholder="Marca" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Modelo</span>
+            <input [(ngModel)]="form.modelo" placeholder="Modelo" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Nº Série</span>
+            <input [(ngModel)]="form.serial" placeholder="Nº Série" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">IMEI / Patrimônio</span>
+            <input [(ngModel)]="form.imei" placeholder="IMEI / Patrimônio" class="inp"/>
+          </label>
         </div>
-        <textarea [(ngModel)]="form.observacoes" placeholder="Observações" class="inp inp-area" rows="2"></textarea>
+        <label class="field field-area">
+          <span class="field-label">Observações</span>
+          <textarea [(ngModel)]="form.observacoes" placeholder="Observações" class="inp inp-area" rows="2"></textarea>
+        </label>
         <div class="form-actions">
           <button class="btn-primary" [disabled]="loading" (click)="salvar()">
             @if (loading) { Salvando... } @else { Salvar }
