@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -91,7 +91,7 @@ export class ListagemClienteComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   lista: Cliente[] = [];
   erro = '';
-  constructor(private service: ClientesService, private route: ActivatedRoute) {}
+  constructor(private service: ClientesService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
   ngOnInit() {
     this.carregar();
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(() => this.carregar());
@@ -103,14 +103,14 @@ export class ListagemClienteComponent implements OnInit, OnDestroy {
   carregar() {
     this.erro = '';
     this.service.listar().pipe(takeUntil(this.destroy$)).subscribe({
-      next: d => this.lista = d,
-      error: () => this.erro = 'Erro ao conectar ao servidor.'
+      next: d => { this.lista = d; this.cdr.detectChanges(); },
+      error: () => { this.erro = 'Erro ao conectar ao servidor.'; this.cdr.detectChanges(); }
     });
   }
   excluir(id: number | string) {
     if (id) this.service.excluir(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => this.lista = this.lista.filter(c => c.id !== id),
-      error: () => this.erro = 'Erro ao excluir.'
+      next: () => { this.lista = this.lista.filter(c => c.id !== id); this.cdr.detectChanges(); },
+      error: () => { this.erro = 'Erro ao excluir.'; this.cdr.detectChanges(); }
     });
   }
 }

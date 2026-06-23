@@ -29,7 +29,12 @@ import { Funcionario } from '../../core/types/types';
           <label>Email</label>
           <input [(ngModel)]="item.email" name="email" placeholder="email@exemplo.com" />
         </div>
-        <button class="btn-primary btn-block" (click)="salvar()">Salvar</button>
+        @if (erro) {
+          <div class="erro-msg">{{ erro }}</div>
+        }
+        <button class="btn-primary btn-block" [disabled]="loading" (click)="salvar()">
+          @if (loading) { Salvando... } @else { Salvar }
+        </button>
       </form>
     </div>
   `,
@@ -42,11 +47,15 @@ import { Funcionario } from '../../core/types/types';
     .field input::placeholder { color: var(--text-muted); opacity: .6; }
     .field input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
     .btn-block { width: 100%; justify-content: center; padding: 11px; margin-top: 8px; font-size: .9rem; }
+    .btn-block:disabled { opacity: .5; cursor: not-allowed; }
+    .erro-msg { color: var(--danger); font-size: .85rem; margin-bottom: 16px; padding: 10px 14px; background: rgba(239,68,68,.1); border-radius: 8px; text-align: center; }
   `]
 })
 export class AlterarFuncionarioComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   item: Funcionario = {} as Funcionario;
+  loading = false;
+  erro = '';
   constructor(
     private service: FuncionariosService,
     private route: ActivatedRoute,
@@ -54,13 +63,21 @@ export class AlterarFuncionarioComponent implements OnInit, OnDestroy {
   ) {}
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id')!;
-    this.service.buscarPorId(idParam).pipe(takeUntil(this.destroy$)).subscribe(d => this.item = d);
+    this.service.buscarPorId(idParam).pipe(takeUntil(this.destroy$)).subscribe({
+      next: d => this.item = d,
+      error: () => this.erro = 'Erro ao carregar dados do funcionário.'
+    });
   }
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
   salvar() {
-    this.service.editar(this.item).pipe(takeUntil(this.destroy$)).subscribe(() => this.router.navigate(['/funcionarios']));
+    this.loading = true;
+    this.erro = '';
+    this.service.editar(this.item).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => this.router.navigate(['/funcionarios'], { queryParams: { _t: Date.now() } }),
+      error: () => { this.erro = 'Erro ao salvar.'; this.loading = false; }
+    });
   }
 }

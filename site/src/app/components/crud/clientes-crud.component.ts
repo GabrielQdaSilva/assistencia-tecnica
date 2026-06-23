@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -87,7 +87,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
                 <td>{{ c.email }}</td>
                 <td class="actions">
                   <button class="btn-sm btn-blue" (click)="editar(c)">Editar</button>
-                  <button class="btn-sm btn-red" (click)="confirmArquivar(c)">Arquivar</button>
+                  <button class="btn-sm btn-red" (click)="confirmExcluir(c)">Excluir</button>
                 </td>
               </tr>
             }
@@ -95,33 +95,6 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
         </table>
       }
     </div>
-
-    <details class="archived-section">
-      <summary>Clientes Arquivados ({{ inativos.length }})</summary>
-      @if (inativos.length === 0) {
-        <p class="empty-sm">Nenhum cliente arquivado.</p>
-      } @else {
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr><th>ID</th><th>Nome</th><th>CPF/CNPJ</th><th>Ações</th></tr>
-            </thead>
-            <tbody>
-              @for (c of inativos; track c.id) {
-                <tr>
-                  <td>{{ c.id }}</td>
-                  <td>{{ c.nome }}</td>
-                  <td>{{ c.cpfCnpj }}</td>
-                  <td class="actions">
-                    <button class="btn-sm btn-blue" (click)="confirmReativar(c)">Reativar</button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </details>
 
     <app-confirm-dialog
       [show]="confirm.show"
@@ -188,10 +161,6 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     tbody tr:hover td { background: rgba(59,130,246,.03); }
     .actions { display: flex; gap: 6px; white-space: nowrap; }
     .empty { padding: 48px; text-align: center; color: var(--text-muted); }
-    .empty-sm { padding: 16px; text-align: center; color: var(--text-muted); font-size: .85rem; }
-    .archived-section { margin-top: 8px; }
-    .archived-section summary { cursor: pointer; color: var(--text-muted); font-size: .85rem; font-weight: 600; padding: 8px 0; }
-    .archived-section summary:hover { color: var(--text); }
     .inp {
       background: var(--bg); border: 1px solid var(--border);
       border-radius: 8px; padding: 11px 16px;
@@ -223,7 +192,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   `]
 })
 export class ClientesCrudComponent implements OnInit, OnDestroy {
-  constructor(private service: ClientesService) {}
+  constructor(private service: ClientesService, private cdr: ChangeDetectorRef) {}
 
   todos: Cliente[] = [];
   showForm = false;
@@ -238,10 +207,9 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
   erro = '';
   sucesso = '';
   erroGeral = '';
-  confirm = { show: false, title: '', text: '', loading: false, item: null as Cliente | null, isReativar: false };
+  confirm = { show: false, title: '', text: '', loading: false, item: null as Cliente | null };
 
   get ativos() { return this.todos.filter(c => c.ativo); }
-  get inativos() { return this.todos.filter(c => !c.ativo); }
 
   private maskTel(v: string): string {
     const d = v.replace(/\D/g, '').slice(0, 11);
@@ -280,8 +248,8 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
   listar() {
     this.listLoading = true;
     this.service.listar().pipe(takeUntil(this.destroy$)).subscribe({
-      next: d => { this.todos = d; this.listLoading = false; },
-      error: () => { this.erroGeral = 'Erro ao carregar.'; this.listLoading = false; }
+      next: d => { this.todos = d; this.listLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.erroGeral = 'Erro ao carregar.'; this.listLoading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -334,10 +302,11 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
         this.editId = null;
         this.form = { tipo: 'PF', ativo: true };
         this.sucesso = editando ? 'Cliente atualizado.' : 'Cliente cadastrado.';
-        setTimeout(() => this.sucesso = '', 3000);
+        this.cdr.detectChanges();
+        setTimeout(() => { this.sucesso = ''; this.cdr.detectChanges(); }, 3000);
         this.listar();
       },
-      error: () => { this.erroGeral = 'Erro ao salvar.'; this.loading = false; }
+      error: () => { this.erroGeral = 'Erro ao salvar.'; this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -347,24 +316,22 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
     this.showForm = true;
   }
 
-  confirmArquivar(c: Cliente) {
-    this.confirm = { show: true, title: 'Arquivar Cliente', text: `Arquivar "${c.nome}"? O cliente ficará inativo.`, loading: false, item: c, isReativar: false };
-  }
-  confirmReativar(c: Cliente) {
-    this.confirm = { show: true, title: 'Reativar Cliente', text: `Reativar "${c.nome}"?`, loading: false, item: c, isReativar: true };
+  confirmExcluir(c: Cliente) {
+    this.confirm = { show: true, title: 'Excluir Cliente', text: `Excluir "${c.nome}"? Esta ação não pode ser desfeita.`, loading: false, item: c };
   }
   confirmOk() {
     const c = this.confirm.item; if (!c?.id) return; this.confirm.loading = true;
-    this.service.editar({ ...c, ativo: this.confirm.isReativar }).pipe(takeUntil(this.destroy$)).subscribe({
+    this.service.excluir(c.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
-        this.confirm = { show: false, title: '', text: '', loading: false, item: null, isReativar: false };
-        this.sucesso = this.confirm.isReativar ? 'Cliente reativado.' : 'Cliente arquivado.';
-        setTimeout(() => this.sucesso = '', 3000); this.listar();
+        this.confirm = { show: false, title: '', text: '', loading: false, item: null };
+        this.sucesso = 'Cliente excluído.';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.sucesso = ''; this.cdr.detectChanges(); }, 3000); this.listar();
       },
-      error: () => { this.confirm.show = false; this.erroGeral = 'Erro ao arquivar.'; }
+      error: () => { this.confirm.show = false; this.erroGeral = 'Erro ao excluir.'; this.cdr.detectChanges(); }
     });
   }
-  confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null, isReativar: false }; }
+  confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
   consultar() {
     this.resultado = null;
@@ -375,14 +342,15 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
       if (isNaN(id)) { this.erro = 'ID deve ser número.'; return; }
       this.searchLoading = true;
       this.service.buscarPorId(id).pipe(takeUntil(this.destroy$)).subscribe({
-        next: d => { this.resultado = d; this.searchLoading = false; },
-        error: () => { this.erro = 'Não encontrado.'; this.searchLoading = false; }
+        next: d => { this.resultado = d; this.searchLoading = false; this.cdr.detectChanges(); },
+        error: () => { this.erro = 'Não encontrado.'; this.searchLoading = false; this.cdr.detectChanges(); }
       });
     } else {
       const val = this.valor.toLowerCase();
       const found = this.ativos.find(c => String(c[this.campo as keyof Cliente] ?? '').toLowerCase().includes(val));
       this.resultado = found ?? null;
       if (!found) this.erro = 'Não encontrado.';
+      this.cdr.detectChanges();
     }
   }
 }
