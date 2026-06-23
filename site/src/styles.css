@@ -130,7 +130,8 @@ th {
 td { color: var(--text); border-bottom: 1px solid var(--border); }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: rgba(6,182,212,.03); }
-.actions { display: flex; gap: 6px; white-space: nowrap; }
+td.actions { white-space: nowrap; }
+td.actions .btn-sm + .btn-sm { margin-left: 6px; }
 .empty { padding: 48px; text-align: center; color: var(--text-muted); }
 
 .status-badge {

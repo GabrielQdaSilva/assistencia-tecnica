@@ -41,6 +41,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
             </button>
             <button class="btn-sec" (click)="cancelar()">Cancelar</button>
           </div>
+          @if (erroGeral) {
+            <p class="err">{{ erroGeral }}</p>
+          }
         </div>
       }
 
@@ -81,7 +84,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       </div>
 
       @if (sucesso) { <div class="success-msg">{{ sucesso }}</div> }
-      @if (erroGeral) { <div class="err-msg">{{ erroGeral }}</div> }
+      @if (!showForm && erroGeral) { <div class="err-msg">{{ erroGeral }}</div> }
       @if (erro) { <p class="err">{{ erro }}</p> }
 
       <!-- Modal de edição com conversa -->

@@ -34,6 +34,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
         <button class="btn-primary" [disabled]="loading" (click)="salvar()">
           @if (loading) { Salvando... } @else { Salvar }
         </button>
+        @if (erroGeral) {
+          <p class="err">{{ erroGeral }}</p>
+        }
       </div>
     }
 
@@ -110,7 +113,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
     }
-    @if (erroGeral) {
+    @if (!showForm && erroGeral) {
       <p class="err">{{ erroGeral }}</p>
     }
   `,
@@ -166,7 +169,8 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     td { color: var(--text); border-bottom: 1px solid var(--border); }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover td { background: rgba(59,130,246,.03); }
-    .actions { display: flex; gap: 6px; white-space: nowrap; }
+    td.actions { white-space: nowrap; }
+    td.actions .btn-sm + .btn-sm { margin-left: 6px; }
     .empty { padding: 48px; text-align: center; color: var(--text-muted); }
     .inp {
       background: var(--bg); border: 1px solid var(--border);

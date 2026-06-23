@@ -52,6 +52,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
           </button>
           <button class="btn-sec" (click)="cancelar()">Cancelar</button>
         </div>
+        @if (erroGeral) {
+          <p class="err">{{ erroGeral }}</p>
+        }
       </div>
     }
 
@@ -130,7 +133,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
     }
-    @if (erroGeral) {
+    @if (!showForm && erroGeral) {
       <p class="err">{{ erroGeral }}</p>
     }
   `,
@@ -194,7 +197,8 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     .low-stock td { background: rgba(249,115,22,.04) !important; }
     .text-danger { color: var(--danger); font-weight: 700; }
     .text-success { color: var(--success); font-weight: 600; }
-    .actions { display: flex; gap: 6px; white-space: nowrap; }
+    td.actions { white-space: nowrap; }
+    td.actions .btn-sm + .btn-sm { margin-left: 6px; }
     .empty { padding: 48px; text-align: center; color: var(--text-muted); }
     .inp {
       background: var(--bg); border: 1px solid var(--border);
