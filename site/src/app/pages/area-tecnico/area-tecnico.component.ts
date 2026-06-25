@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -200,14 +200,14 @@ import { ChamadosService } from '../../core/services/chamados.service';
               </button>
             </div>
             <button class="btn-primary" (click)="toggleForm()">
-              {{ showForm ? 'Cancelar' : '+ Nova Ordem' }}
+              {{ showNewForm ? 'Cancelar' : '+ Nova Ordem' }}
             </button>
           </div>
         </div>
 
-        @if (showForm) {
+        @if (showNewForm) {
           <div class="form-card">
-            <h3>{{ editId ? 'Editar Ordem #' + editId : 'Nova Ordem de Serviço' }}</h3>
+            <h3>Nova Ordem de Serviço</h3>
             <div class="form-grid">
               <label class="field">
                 <span class="field-label">Técnico <span class="field-required">*</span></span>
@@ -304,39 +304,17 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <span class="field-label">Observações</span>
               <textarea [(ngModel)]="form.observacoes" placeholder="Informações adicionais" class="inp inp-area" rows="2"></textarea>
             </label>
-              <div class="form-actions">
-                <button class="btn-primary" [disabled]="saving" (click)="salvar()">
-                  @if (saving) { Salvando... } @else { Salvar }
-                </button>
-                <button class="btn-sec" (click)="cancelarForm()">Cancelar</button>
-                @if (editId && form.historico && form.historico.length > 0) {
-                  <button class="btn-sec" (click)="showTimeline = !showTimeline">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Histórico
-                  </button>
-                  <button class="btn-sec" (click)="imprimirOS()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Imprimir
-                  </button>
-                }
-              </div>
-              @if (showTimeline && form.historico) {
-                <div class="timeline">
-                  <div class="timeline-title">Linha do Tempo</div>
-                  @for (h of form.historico; track $index) {
-                    <div class="timeline-item">
-                      <div class="timeline-dot" [class]="'td-' + statusClass(h.status)"></div>
-                      <div class="timeline-content">
-                        <span class="timeline-status">{{ h.status }}</span>
-                        <span class="timeline-data">{{ h.data }}</span>
-                        <span class="timeline-resp">{{ h.responsavel }}</span>
-                      </div>
-                    </div>
-                  }
-                </div>
-              }
+            <div class="form-actions">
+              <button class="btn-primary" [disabled]="saving" (click)="salvar()">
+                @if (saving) { Salvando... } @else { Salvar }
+              </button>
+              <button class="btn-sec" (click)="cancelarForm()">Cancelar</button>
             </div>
-          }
+            @if (hasErrors()) {
+              <p class="err">Corrija os erros antes de salvar.</p>
+            }
+          </div>
+        }
 
         @if (viewMode === 'kanban') {
           <div class="kanban-board">
@@ -466,8 +444,141 @@ import { ChamadosService } from '../../core/services/chamados.service';
                 </tbody>
               </table>
             }
-          </div>
-        }
+            </div>
+          }
+
+        @if (showEditForm) {
+          <div class="form-card">
+            <h3>Editar Ordem #{{ editId }}</h3>
+            <div class="form-grid">
+              <label class="field">
+                <span class="field-label">Técnico <span class="field-required">*</span></span>
+                <select [(ngModel)]="form.tecnicoId" class="inp" [class.inp-error]="formErrors['tecnicoId']">
+                  <option [ngValue]="0" disabled>Selecione...</option>
+                  @for (f of funcionarios; track f.id) {
+                    <option [ngValue]="f.id">{{ f.nome }} ({{ f.cargo }})</option>
+                  }
+                </select>
+                @if (formErrors['tecnicoId']) {
+                  <span class="field-error">{{ formErrors['tecnicoId'] }}</span>
+                }
+              </label>
+              <label class="field">
+                <span class="field-label">Cliente <span class="field-required">*</span></span>
+                <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
+                  <option [ngValue]="0" disabled>Selecione...</option>
+                  @for (c of clientes; track c.id) {
+                    <option [ngValue]="c.id">{{ c.nome }}</option>
+                  }
+                </select>
+                @if (formErrors['clienteId']) {
+                  <span class="field-error">{{ formErrors['clienteId'] }}</span>
+                }
+              </label>
+              <label class="field">
+                <span class="field-label">Equipamento</span>
+                <select [(ngModel)]="form.equipamentoId" class="inp">
+                  <option [ngValue]="0" disabled>Selecione...</option>
+                  @for (e of equipamentos; track e.id) {
+                    <option [ngValue]="e.id">{{ e.marca }} {{ e.modelo }} - {{ e.clienteNome }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Aparelho</span>
+                <input [(ngModel)]="form.aparelho" placeholder="ex: iPhone 12" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Tipo</span>
+                <input [(ngModel)]="form.tipoAparelho" placeholder="ex: smartphone, notebook" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Prioridade</span>
+                <select [(ngModel)]="form.prioridade" class="inp">
+                  <option value="Normal">Normal</option>
+                  <option value="Baixa">Baixa</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Estado</span>
+                <select [(ngModel)]="form.status" class="inp">
+                  <option value="Na Fila">Na Fila</option>
+                  <option value="Em Análise">Em Análise</option>
+                  <option value="Orçamento Aprovado">Orçamento Aprovado</option>
+                  <option value="Pronto">Pronto</option>
+                  <option value="Entregue">Entregue</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Prazo</span>
+                <input [(ngModel)]="form.tempoEstimado" type="number" placeholder="dias" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Garantia</span>
+                <input [(ngModel)]="form.garantiaDias" type="number" placeholder="dias" class="inp"/>
+              </label>
+            </div>
+            <label class="field field-area">
+              <span class="field-label">Defeito relatado</span>
+              <textarea [(ngModel)]="form.defeito" placeholder="Descreva o problema relatado pelo cliente" class="inp inp-area" rows="2"></textarea>
+            </label>
+            <label class="field field-area">
+              <span class="field-label">Diagnóstico técnico</span>
+              <textarea [(ngModel)]="form.diagnosticos" placeholder="Resultado da análise técnica" class="inp inp-area" rows="2"></textarea>
+            </label>
+            <div class="form-grid form-grid-3">
+              <label class="field">
+                <span class="field-label">Mão de obra</span>
+                <input [(ngModel)]="form.valorServico" type="number" placeholder="R$ 0,00" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Peças</span>
+                <input [(ngModel)]="form.valorPecas" type="number" placeholder="R$ 0,00" class="inp"/>
+              </label>
+              <label class="field">
+                <span class="field-label">Total</span>
+                <input [value]="(form.valorServico ?? 0) + (form.valorPecas ?? 0) || ''" type="text" placeholder="R$ 0,00" class="inp" readonly/>
+              </label>
+            </div>
+            <label class="field field-area">
+              <span class="field-label">Observações</span>
+              <textarea [(ngModel)]="form.observacoes" placeholder="Informações adicionais" class="inp inp-area" rows="2"></textarea>
+            </label>
+              <div class="form-actions">
+                <button class="btn-primary" [disabled]="saving" (click)="salvar()">
+                  @if (saving) { Salvando... } @else { Salvar }
+                </button>
+                <button class="btn-sec" (click)="cancelarForm()">Cancelar</button>
+                @if (editId && form.historico && form.historico.length > 0) {
+                  <button class="btn-sec" (click)="showTimeline = !showTimeline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Histórico
+                  </button>
+                  <button class="btn-sec" (click)="imprimirOS()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Imprimir
+                  </button>
+                }
+              </div>
+              @if (showTimeline && form.historico) {
+                <div class="timeline">
+                  <div class="timeline-title">Linha do Tempo</div>
+                  @for (h of form.historico; track $index) {
+                    <div class="timeline-item">
+                      <div class="timeline-dot" [class]="'td-' + statusClass(h.status)"></div>
+                      <div class="timeline-content">
+                        <span class="timeline-status">{{ h.status }}</span>
+                        <span class="timeline-data">{{ h.data }}</span>
+                        <span class="timeline-resp">{{ h.responsavel }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
       </main>
 
       <!-- Abas de Gestão -->
@@ -606,7 +717,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
 
     .form-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px; margin-bottom: 24px;
+      border-radius: 12px; padding: 24px;
       border-left: 3px solid var(--primary);
     }
     .form-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
@@ -635,6 +746,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
       display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
       margin-bottom: 24px; min-height: 300px;
     }
+    .table-wrapper { margin-bottom: 24px; }
     @media (max-width: 1100px) { .kanban-board { grid-template-columns: repeat(3, 1fr); } }
     @media (max-width: 700px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 450px) { .kanban-board { grid-template-columns: 1fr; } }
@@ -742,6 +854,10 @@ import { ChamadosService } from '../../core/services/chamados.service';
     }
 
     .success { margin-bottom: 16px; }
+    .inp-error { border-color: var(--danger); }
+    .inp-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+    .field-required { color: var(--danger); margin-left: 2px; }
+    .field-error { display: block; color: var(--danger); font-size: .75rem; margin-top: 4px; }
   `]
 })
 export class AreaTecnicoComponent implements OnInit, OnDestroy {
@@ -753,7 +869,8 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     private equipamentosService: EquipamentosService,
     private router: Router,
     public auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private el: ElementRef
   ) {}
 
   funcionarios: Funcionario[] = [];
@@ -765,7 +882,8 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
   filtroDataInicio = '';
   filtroDataFim = '';
 
-  showForm = false;
+  showNewForm = false;
+  showEditForm = false;
   editId: number | null = null;
   form: Partial<OrdemServico> = {};
   formErrors: Record<string, string> = {};
@@ -861,17 +979,35 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     this.analytics.emGarantia = this.ordens.filter(o => o.garantiaFim && new Date(o.garantiaFim) > new Date()).length;
   }
 
+  hasErrors(): boolean {
+    return Object.keys(this.formErrors).length > 0;
+  }
+
   toggleForm() {
-    this.showForm = !this.showForm;
-    if (this.showForm) {
+    this.showNewForm = !this.showNewForm;
+    this.showEditForm = false;
+    if (this.showNewForm) {
       this.editId = null;
       this.form = { prioridade: 'Normal', status: 'Na Fila' };
       this.showTimeline = false;
+      this.formErrors = {};
+      this.scrollToForm();
     }
   }
 
+  private scrollToForm() {
+    setTimeout(() => {
+      const el = this.el.nativeElement.querySelector('.form-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el.querySelector('input, select, textarea') as HTMLElement)?.focus();
+      }
+    }, 100);
+  }
+
   cancelarForm() {
-    this.showForm = false;
+    this.showNewForm = false;
+    this.showEditForm = false;
     this.editId = null;
     this.form = { prioridade: 'Normal', status: 'Na Fila' };
     this.formErrors = {};
@@ -940,7 +1076,10 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
   editar(o: OrdemServico) {
     this.editId = o.id ?? null;
     this.form = { ...o };
-    this.showForm = true;
+    this.showNewForm = false;
+    this.showEditForm = true;
+    this.formErrors = {};
+    this.scrollToForm();
   }
 
   statusClass(s: string): string {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -12,31 +12,23 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
-      <button class="btn-primary" (click)="showForm = !showForm">
-        {{ showForm ? 'Cancelar' : '+ Nova Peça' }}
+      <button class="btn-primary" (click)="toggleForm()">
+        {{ showNewForm ? 'Cancelar' : '+ Nova Peça' }}
       </button>
     </div>
 
-    @if (baixoEstoque.length > 0) {
-      <div class="alert-card">
-        <strong>⚠ Estoque baixo:</strong>
-        @for (p of baixoEstoque; track p.id) {
-          <span class="alert-item">{{ p.nome }} ({{ p.quantidade }}/{{ p.estoqueMinimo }})</span>
-        }
-      </div>
-    }
-
-    @if (showForm) {
+    @if (showNewForm) {
       <div class="form-card">
-        <h3>{{ editId ? 'Editar Peça' : 'Nova Peça' }}</h3>
+        <h3>Nova Peça</h3>
         <div class="form-grid">
           <label class="field">
-            <span class="field-label">Peça</span>
-            <input [(ngModel)]="form.nome" placeholder="Nome da peça" class="inp"/>
+            <span class="field-label">Peça <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.nome" placeholder="Nome da peça" class="inp" [class.inp-error]="formErrors['nome']"/>
+            @if (formErrors['nome']) { <span class="field-error">{{ formErrors['nome'] }}</span> }
           </label>
           <label class="field">
-            <span class="field-label">Categoria</span>
-            <select [(ngModel)]="form.categoria" class="inp">
+            <span class="field-label">Categoria <span class="field-required">*</span></span>
+            <select [(ngModel)]="form.categoria" class="inp" [class.inp-error]="formErrors['categoria']">
               <option value="">Categoria</option>
               <option value="Tela">Tela</option>
               <option value="Bateria">Bateria</option>
@@ -46,14 +38,16 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
               <option value="Consumível">Consumível</option>
               <option value="Outro">Outro</option>
             </select>
+            @if (formErrors['categoria']) { <span class="field-error">{{ formErrors['categoria'] }}</span> }
           </label>
           <label class="field">
-            <span class="field-label">Quantidade</span>
-            <input [(ngModel)]="form.quantidade" type="number" placeholder="Quantidade" class="inp"/>
+            <span class="field-label">Quantidade <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.quantidade" type="number" placeholder="Quantidade" class="inp" [class.inp-error]="formErrors['quantidade']"/>
+            @if (formErrors['quantidade']) { <span class="field-error">{{ formErrors['quantidade'] }}</span> }
           </label>
           <label class="field">
             <span class="field-label">Estoque Mínimo</span>
-            <input [(ngModel)]="form.estoqueMinimo" type="number" placeholder="Estoque mínimo" class="inp"/>
+            <input [(ngModel)]="form.estoqueMinimo" type="number" placeholder="Estoque mínimo" class="inp" [class.inp-error]="formErrors['estoqueMinimo']"/>
           </label>
           <label class="field">
             <span class="field-label">Custo (R$)</span>
@@ -64,14 +58,20 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
             <input [(ngModel)]="form.valorVenda" type="number" placeholder="Venda (R$)" class="inp"/>
           </label>
         </div>
-        <div class="form-actions">
-          <button class="btn-primary" [disabled]="loading" (click)="salvar()">
-            @if (loading) { Salvando... } @else { Salvar }
-          </button>
-          <button class="btn-sec" (click)="cancelar()">Cancelar</button>
-        </div>
+        <button class="btn-primary" [disabled]="loading" (click)="salvar()">
+          @if (loading) { Salvando... } @else { Salvar }
+        </button>
         @if (erroGeral) {
           <p class="err">{{ erroGeral }}</p>
+        }
+      </div>
+    }
+
+    @if (baixoEstoque.length > 0) {
+      <div class="alert-card">
+        <strong>⚠ Estoque baixo:</strong>
+        @for (p of baixoEstoque; track p.id) {
+          <span class="alert-item">{{ p.nome }} ({{ p.quantidade }}/{{ p.estoqueMinimo }})</span>
         }
       </div>
     }
@@ -139,6 +139,59 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       }
     </div>
 
+    @if (showEditForm) {
+      <div class="form-card">
+        <h3>Editar Peça</h3>
+        <div class="form-grid">
+          <label class="field">
+            <span class="field-label">Peça <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.nome" placeholder="Nome da peça" class="inp" [class.inp-error]="formErrors['nome']"/>
+            @if (formErrors['nome']) { <span class="field-error">{{ formErrors['nome'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">Categoria <span class="field-required">*</span></span>
+            <select [(ngModel)]="form.categoria" class="inp" [class.inp-error]="formErrors['categoria']">
+              <option value="">Categoria</option>
+              <option value="Tela">Tela</option>
+              <option value="Bateria">Bateria</option>
+              <option value="Fonte">Fonte</option>
+              <option value="Armazenamento">Armazenamento</option>
+              <option value="Memória">Memória</option>
+              <option value="Consumível">Consumível</option>
+              <option value="Outro">Outro</option>
+            </select>
+            @if (formErrors['categoria']) { <span class="field-error">{{ formErrors['categoria'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">Quantidade <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.quantidade" type="number" placeholder="Quantidade" class="inp" [class.inp-error]="formErrors['quantidade']"/>
+            @if (formErrors['quantidade']) { <span class="field-error">{{ formErrors['quantidade'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">Estoque Mínimo</span>
+            <input [(ngModel)]="form.estoqueMinimo" type="number" placeholder="Estoque mínimo" class="inp" [class.inp-error]="formErrors['estoqueMinimo']"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Custo (R$)</span>
+            <input [(ngModel)]="form.valorCusto" type="number" placeholder="Custo (R$)" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Venda (R$)</span>
+            <input [(ngModel)]="form.valorVenda" type="number" placeholder="Venda (R$)" class="inp"/>
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" [disabled]="loading" (click)="salvar()">
+            @if (loading) { Salvando... } @else { Salvar }
+          </button>
+          <button class="btn-sec" (click)="cancelar()">Cancelar</button>
+        </div>
+        @if (erroGeral) {
+          <p class="err">{{ erroGeral }}</p>
+        }
+      </div>
+    }
+
     <app-confirm-dialog
       [show]="confirm.show"
       [title]="confirm.title"
@@ -151,7 +204,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
     }
-    @if (!showForm && erroGeral) {
+    @if (!showNewForm && !showEditForm && erroGeral) {
       <p class="err">{{ erroGeral }}</p>
     }
   `,
@@ -225,6 +278,10 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       outline: none; transition: all .2s; width: 100%;
     }
     .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .inp-error { border-color: var(--danger); }
+    .inp-error:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+    .field-required { color: var(--danger); margin-left: 2px; }
+    .field-error { color: var(--danger); font-size: .78rem; margin-top: 4px; display: block; }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 11px 24px; background: var(--primary); color: #fff;
@@ -256,10 +313,11 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   `]
 })
 export class EstoqueCrudComponent implements OnInit {
-  constructor(private service: EstoqueService, private cdr: ChangeDetectorRef) {}
+  constructor(private service: EstoqueService, private cdr: ChangeDetectorRef, private el: ElementRef) {}
 
   itens: EstoqueItem[] = [];
-  showForm = false;
+  showNewForm = false;
+  showEditForm = false;
   editId: number | null = null;
   form: Partial<EstoqueItem> = {};
   loading = false;
@@ -270,6 +328,7 @@ export class EstoqueCrudComponent implements OnInit {
   erro = '';
   sucesso = '';
   erroGeral = '';
+  formErrors: Record<string, string> = {};
   confirm = { show: false, title: '', text: '', loading: false, item: null as EstoqueItem | null };
 
   get baixoEstoque() { return this.itens.filter(p => p.quantidade <= p.estoqueMinimo); }
@@ -297,20 +356,20 @@ export class EstoqueCrudComponent implements OnInit {
   }
 
   cancelar() {
-    this.showForm = false;
+    this.showNewForm = false;
+    this.showEditForm = false;
     this.editId = null;
     this.form = {};
+    this.formErrors = {};
   }
 
   salvar() {
-    if (!this.form.nome || !this.form.categoria || this.form.quantidade == null) {
-      this.erroGeral = 'Nome, Categoria e Quantidade são obrigatórios.';
-      return;
-    }
-    if (Number(this.form.quantidade) < 0) {
-      this.erroGeral = 'Quantidade não pode ser negativa.';
-      return;
-    }
+    this.formErrors = {};
+    if (!this.form.nome) { this.formErrors['nome'] = 'Nome é obrigatório.'; }
+    if (!this.form.categoria) { this.formErrors['categoria'] = 'Categoria é obrigatória.'; }
+    if (this.form.quantidade == null) { this.formErrors['quantidade'] = 'Quantidade é obrigatória.'; }
+    if (Number(this.form.quantidade) < 0) { this.formErrors['quantidade'] = 'Quantidade não pode ser negativa.'; }
+    if (Object.keys(this.formErrors).length) return;
     const dup = this.itens.find(p => p.id !== this.editId && p.nome.toLowerCase() === this.form.nome?.toLowerCase());
     if (dup) {
       this.erroGeral = 'Já existe uma peça com este nome.';
@@ -319,12 +378,12 @@ export class EstoqueCrudComponent implements OnInit {
     this.loading = true;
     this.erroGeral = '';
     const payload: EstoqueItem = {
-      nome: this.form.nome,
+      nome: this.form.nome!,
       quantidade: Number(this.form.quantidade),
       estoqueMinimo: Number(this.form.estoqueMinimo) || 1,
       valorCusto: Number(this.form.valorCusto) || 0,
       valorVenda: Number(this.form.valorVenda) || 0,
-      categoria: this.form.categoria
+      categoria: this.form.categoria!
     };
     const op = this.editId
       ? this.service.editar({ ...payload, id: this.editId })
@@ -343,10 +402,36 @@ export class EstoqueCrudComponent implements OnInit {
     });
   }
 
+  toggleForm() {
+    this.showNewForm = !this.showNewForm;
+    this.showEditForm = false;
+    this.editId = null;
+    this.form = {};
+    this.sucesso = '';
+    this.erroGeral = '';
+    this.formErrors = {};
+    if (this.showNewForm) this.scrollToForm();
+  }
+
+  private scrollToForm() {
+    setTimeout(() => {
+      const el = this.el.nativeElement.querySelector('.form-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el.querySelector('input, select, textarea') as HTMLElement)?.focus();
+      }
+    }, 100);
+  }
+
   editar(p: EstoqueItem) {
     this.editId = p.id ?? null;
     this.form = { ...p };
-    this.showForm = true;
+    this.showNewForm = false;
+    this.showEditForm = true;
+    this.sucesso = '';
+    this.erroGeral = '';
+    this.formErrors = {};
+    this.scrollToForm();
   }
 
   confirmExcluir(p: EstoqueItem) {

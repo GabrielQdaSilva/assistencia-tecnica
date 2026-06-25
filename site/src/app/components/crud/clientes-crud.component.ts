@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -12,18 +12,21 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
-      <button class="btn-primary" (click)="showForm = !showForm">
-        {{ showForm ? 'Cancelar' : '+ Novo Cliente' }}
+      <button class="btn-primary" (click)="toggleForm()">
+        {{ showNewForm ? 'Cancelar' : '+ Novo Cliente' }}
       </button>
     </div>
 
-    @if (showForm) {
+    @if (showNewForm) {
       <div class="form-card">
-        <h3>{{ editId ? 'Editar Cliente' : 'Novo Cliente' }}</h3>
+        <h3>Novo Cliente</h3>
         <div class="form-grid">
           <label class="field">
-            <span class="field-label">Nome</span>
-            <input [(ngModel)]="form.nome" placeholder="Nome" class="inp"/>
+            <span class="field-label">Nome <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.nome" placeholder="Nome" class="inp" [class.inp-error]="formErrors['nome']"/>
+            @if (formErrors['nome']) {
+              <span class="field-error">{{ formErrors['nome'] }}</span>
+            }
           </label>
           <label class="field">
             <span class="field-label">Tipo</span>
@@ -34,15 +37,21 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
           </label>
           <label class="field">
             <span class="field-label">{{ form.tipo === 'PJ' ? 'CNPJ' : 'CPF' }}</span>
-            <input [(ngModel)]="form.cpfCnpj" [placeholder]="form.tipo === 'PJ' ? 'CNPJ' : 'CPF'" class="inp"/>
+            <input [(ngModel)]="form.cpfCnpj" [placeholder]="form.tipo === 'PJ' ? 'CNPJ' : 'CPF'" class="inp" [class.inp-error]="formErrors['cpfCnpj']"/>
+            @if (formErrors['cpfCnpj']) {
+              <span class="field-error">{{ formErrors['cpfCnpj'] }}</span>
+            }
           </label>
           <label class="field">
             <span class="field-label">Telefone</span>
             <input [(ngModel)]="form.telefone" placeholder="Telefone" class="inp"/>
           </label>
           <label class="field">
-            <span class="field-label">Email</span>
-            <input [(ngModel)]="form.email" placeholder="Email" class="inp"/>
+            <span class="field-label">Email <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.email" placeholder="Email" class="inp" [class.inp-error]="formErrors['email']"/>
+            @if (formErrors['email']) {
+              <span class="field-error">{{ formErrors['email'] }}</span>
+            }
           </label>
           <label class="field">
             <span class="field-label">Endereço</span>
@@ -119,6 +128,59 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       }
     </div>
 
+    @if (showEditForm) {
+      <div class="form-card">
+        <h3>Editar Cliente</h3>
+        <div class="form-grid">
+          <label class="field">
+            <span class="field-label">Nome <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.nome" placeholder="Nome" class="inp" [class.inp-error]="formErrors['nome']"/>
+            @if (formErrors['nome']) {
+              <span class="field-error">{{ formErrors['nome'] }}</span>
+            }
+          </label>
+          <label class="field">
+            <span class="field-label">Tipo</span>
+            <select [(ngModel)]="form.tipo" class="inp">
+              <option value="PF">Pessoa Física</option>
+              <option value="PJ">Pessoa Jurídica</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">{{ form.tipo === 'PJ' ? 'CNPJ' : 'CPF' }}</span>
+            <input [(ngModel)]="form.cpfCnpj" [placeholder]="form.tipo === 'PJ' ? 'CNPJ' : 'CPF'" class="inp" [class.inp-error]="formErrors['cpfCnpj']"/>
+            @if (formErrors['cpfCnpj']) {
+              <span class="field-error">{{ formErrors['cpfCnpj'] }}</span>
+            }
+          </label>
+          <label class="field">
+            <span class="field-label">Telefone</span>
+            <input [(ngModel)]="form.telefone" placeholder="Telefone" class="inp"/>
+          </label>
+          <label class="field">
+            <span class="field-label">Email <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.email" placeholder="Email" class="inp" [class.inp-error]="formErrors['email']"/>
+            @if (formErrors['email']) {
+              <span class="field-error">{{ formErrors['email'] }}</span>
+            }
+          </label>
+          <label class="field">
+            <span class="field-label">Endereço</span>
+            <input [(ngModel)]="form.endereco" placeholder="Endereço" class="inp"/>
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" [disabled]="loading" (click)="salvar()">
+            @if (loading) { Salvando... } @else { Salvar }
+          </button>
+          <button class="btn-sec" (click)="cancelar()">Cancelar</button>
+        </div>
+        @if (erroGeral) {
+          <p class="err">{{ erroGeral }}</p>
+        }
+      </div>
+    }
+
     <app-confirm-dialog
       [show]="confirm.show"
       [title]="confirm.title"
@@ -131,7 +193,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
     }
-    @if (!showForm && erroGeral) {
+    @if (!showNewForm && !showEditForm && erroGeral) {
       <p class="err">{{ erroGeral }}</p>
     }
   `,
@@ -205,6 +267,13 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     }
     .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-sec {
+      padding: 11px 24px; background: var(--surface-hover); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-sec:hover { background: var(--border); }
+    .form-actions { display: flex; gap: 10px; margin-top: 16px; }
     .btn-sm { padding: 7px 16px; font-size: .8rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all .2s; }
     .btn-blue { background: var(--primary); color: #fff; }
     .btn-blue:hover { background: var(--primary-hover); transform: translateY(-1px); }
@@ -218,13 +287,18 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       border-radius: 8px; display: flex; align-items: center; gap: 6px;
     }
     .success::before { content: '\u2713'; font-weight: 700; }
+    .inp-error { border-color: var(--danger); }
+    .inp-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+    .field-required { color: var(--danger); margin-left: 2px; }
+    .field-error { display: block; color: var(--danger); font-size: .75rem; margin-top: 4px; }
   `]
 })
 export class ClientesCrudComponent implements OnInit, OnDestroy {
-  constructor(private service: ClientesService, private cdr: ChangeDetectorRef) {}
+  constructor(private service: ClientesService, private cdr: ChangeDetectorRef, private el: ElementRef) {}
 
   todos: Cliente[] = [];
-  showForm = false;
+  showNewForm = false;
+  showEditForm = false;
   editId: number | null = null;
   form: Partial<Cliente> = { tipo: 'PF', ativo: true };
   loading = false;
@@ -235,6 +309,7 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
   erro = '';
   sucesso = '';
   erroGeral = '';
+  formErrors: Record<string, string> = {};
   confirm = { show: false, title: '', text: '', loading: false, item: null as Cliente | null };
 
   get ativos() { return this.todos.filter(c => c.ativo); }
@@ -282,28 +357,25 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
   }
 
   salvar() {
-    if (!this.form.nome || !this.form.email) {
-      this.erroGeral = 'Nome e Email são obrigatórios.';
-      return;
-    }
+    this.formErrors = {};
+    if (!this.form.nome) { this.formErrors['nome'] = 'Nome é obrigatório.'; }
+    if (!this.form.email) { this.formErrors['email'] = 'Email é obrigatório.'; }
     if (this.form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)) {
-      this.erroGeral = 'Email inválido.';
-      return;
+      this.formErrors['email'] = 'Email inválido.';
     }
     if (this.form.tipo === 'PF') {
       const cpf = (this.form.cpfCnpj ?? '').replace(/\D/g, '');
       if (cpf.length > 0 && cpf.length !== 11) {
-        this.erroGeral = 'CPF deve ter 11 dígitos.';
-        return;
+        this.formErrors['cpfCnpj'] = 'CPF deve ter 11 dígitos.';
       }
     }
     if (this.form.tipo === 'PJ') {
       const cnpj = (this.form.cpfCnpj ?? '').replace(/\D/g, '');
       if (cnpj.length > 0 && cnpj.length !== 14) {
-        this.erroGeral = 'CNPJ deve ter 14 dígitos.';
-        return;
+        this.formErrors['cpfCnpj'] = 'CNPJ deve ter 14 dígitos.';
       }
     }
+    if (Object.keys(this.formErrors).length) return;
     const dup = this.todos.find(c =>
       c.id !== this.editId && (
         c.nome.toLowerCase() === this.form.nome?.toLowerCase() ||
@@ -326,7 +398,8 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
     op.pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.loading = false;
-        this.showForm = false;
+        this.showNewForm = false;
+        this.showEditForm = false;
         this.editId = null;
         this.form = { tipo: 'PF', ativo: true };
         this.sucesso = editando ? 'Cliente atualizado.' : 'Cliente cadastrado.';
@@ -338,10 +411,45 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
     });
   }
 
+  toggleForm() {
+    this.showNewForm = !this.showNewForm;
+    this.showEditForm = false;
+    this.editId = null;
+    this.form = { tipo: 'PF', ativo: true };
+    this.sucesso = '';
+    this.erroGeral = '';
+    this.formErrors = {};
+    if (this.showNewForm) this.scrollToForm();
+  }
+
+  private scrollToForm() {
+    setTimeout(() => {
+      const el = this.el.nativeElement.querySelector('.form-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el.querySelector('input, select, textarea') as HTMLElement)?.focus();
+      }
+    }, 100);
+  }
+
   editar(c: Cliente) {
     this.editId = c.id ?? null;
     this.form = { ...c };
-    this.showForm = true;
+    this.showNewForm = false;
+    this.showEditForm = true;
+    this.sucesso = '';
+    this.erroGeral = '';
+    this.formErrors = {};
+    this.scrollToForm();
+  }
+
+  cancelar() {
+    this.showNewForm = false;
+    this.showEditForm = false;
+    this.editId = null;
+    this.form = { tipo: 'PF', ativo: true };
+    this.erroGeral = '';
+    this.formErrors = {};
   }
 
   confirmExcluir(c: Cliente) {

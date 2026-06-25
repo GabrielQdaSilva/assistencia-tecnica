@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -18,17 +18,20 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     <div class="chamados-crud">
       <div class="crud-bar">
         <button class="btn-primary" (click)="toggleForm()">
-          {{ showForm ? 'Cancelar' : '+ Novo Chamado' }}
+          {{ showNewForm ? 'Cancelar' : '+ Novo Chamado' }}
         </button>
       </div>
 
-      @if (showForm) {
+      @if (showNewForm) {
         <div class="form-card">
-          <h3>{{ editId ? 'Editar Chamado' : 'Novo Chamado' }}</h3>
+          <h3>Novo Chamado</h3>
           <div class="form-grid">
             <label class="field">
-              <span class="field-label">Descrição</span>
-              <input [(ngModel)]="form.descricao" placeholder="Descrição" class="inp"/>
+              <span class="field-label">Descrição <span class="field-required">*</span></span>
+              <input [(ngModel)]="form.descricao" placeholder="Descrição" class="inp" [class.inp-error]="formErrors['descricao']"/>
+              @if (formErrors['descricao']) {
+                <span class="field-error">{{ formErrors['descricao'] }}</span>
+              }
             </label>
             <label class="field">
               <span class="field-label">Status</span>
@@ -44,12 +47,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
               <input [(ngModel)]="form.observacoes" placeholder="Observações" class="inp"/>
             </label>
           </div>
-          <div class="form-actions">
-            <button class="btn-primary" [disabled]="loading" (click)="salvar()">
-              @if (loading) { Salvando... } @else { Salvar }
-            </button>
-            <button class="btn-sec" (click)="cancelar()">Cancelar</button>
-          </div>
+          <button class="btn-primary" [disabled]="loading" (click)="salvar()">
+            @if (loading) { Salvando... } @else { Salvar }
+          </button>
           @if (erroGeral) {
             <p class="err">{{ erroGeral }}</p>
           }
@@ -93,7 +93,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       </div>
 
       @if (sucesso) { <p class="success">{{ sucesso }}</p> }
-      @if (!showForm && erroGeral) { <p class="err">{{ erroGeral }}</p> }
+      @if (!showNewForm && erroGeral) { <p class="err">{{ erroGeral }}</p> }
       @if (erro) { <p class="err">{{ erro }}</p> }
 
       <!-- Modal de edição com conversa -->
@@ -192,6 +192,10 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     .msg p { font-size: .85rem; color: var(--text); margin: 0; }
     .reply-box { display: flex; gap: 10px; align-items: flex-end; }
     .reply-box .btn-primary { white-space: nowrap; }
+    .inp-error { border-color: var(--danger); }
+    .inp-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+    .field-required { color: var(--danger); margin-left: 2px; }
+    .field-error { display: block; color: var(--danger); font-size: .75rem; margin-top: 4px; }
   `]
 })
 export class ChamadosCrudComponent implements OnDestroy, OnInit {
@@ -206,7 +210,8 @@ export class ChamadosCrudComponent implements OnDestroy, OnInit {
   erro = '';
   sucesso = '';
   erroGeral = '';
-  showForm = false;
+  formErrors: Record<string, string> = {};
+  showNewForm = false;
   editId: number | null = null;
   loading = false;
   mensagens: ChamadoMensagem[] = [];
@@ -219,7 +224,8 @@ export class ChamadosCrudComponent implements OnDestroy, OnInit {
     private service: ChamadosService,
     private msgService: ChamadoMensagensService,
     public auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private el: ElementRef
   ) {}
 
   ngOnInit(): void {
@@ -277,24 +283,38 @@ export class ChamadosCrudComponent implements OnDestroy, OnInit {
   }
 
   toggleForm(): void {
-    this.showForm = !this.showForm;
+    this.showNewForm = !this.showNewForm;
     this.editId = null;
     this.form = { descricao: '', status: 'Aberto', observacoes: '' };
     this.sucesso = '';
     this.erroGeral = '';
+    this.formErrors = {};
+    if (this.showNewForm) this.scrollToForm();
+  }
+
+  private scrollToForm(): void {
+    setTimeout(() => {
+      const el = this.el.nativeElement.querySelector('.form-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el.querySelector('input, select, textarea') as HTMLElement)?.focus();
+      }
+    }, 100);
   }
 
   cancelar(): void {
-    this.showForm = false;
+    this.showNewForm = false;
     this.editId = null;
     this.form = { descricao: '', status: 'Aberto', observacoes: '' };
     this.sucesso = '';
     this.erroGeral = '';
+    this.formErrors = {};
   }
 
   salvar(): void {
+    this.formErrors = {};
     if (!this.form.descricao) {
-      this.erroGeral = 'Descrição é obrigatória.';
+      this.formErrors['descricao'] = 'Descrição é obrigatória.';
       return;
     }
     this.loading = true;
@@ -325,13 +345,20 @@ export class ChamadosCrudComponent implements OnDestroy, OnInit {
 
   editar(ch: Chamado): void {
     this.editando = ch;
+    this.showNewForm = false;
+    this.formErrors = {};
     this.form.status = (ch.status || 'Aberto') as 'Aberto' | 'Em Andamento' | 'Resolvido' | 'Fechado';
     this.replyTexto = '';
     this.carregarMensagens(ch.id!);
     setTimeout(() => {
-      const el = document.querySelector('.conversa-thread');
-      if (el) el.scrollTop = el.scrollHeight;
-    }, 100);
+      const el = this.el.nativeElement.querySelector('.modal-content');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el.querySelector('select, input, textarea') as HTMLElement)?.focus();
+      }
+      const thread = this.el.nativeElement.querySelector('.conversa-thread');
+      if (thread) thread.scrollTop = thread.scrollHeight;
+    }, 150);
   }
 
   confirmExcluir(ch: Chamado): void {

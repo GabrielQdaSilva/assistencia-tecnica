@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -13,51 +13,53 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="crud-bar">
-      <button class="btn-primary" (click)="showForm = !showForm">
-        {{ showForm ? 'Cancelar' : '+ Novo Equipamento' }}
+      <button class="btn-primary" (click)="toggleForm()">
+        {{ showNewForm ? 'Cancelar' : '+ Novo Equipamento' }}
       </button>
     </div>
 
-    @if (showForm) {
+    @if (showNewForm) {
       <div class="form-card">
-        <h3>{{ editId ? 'Editar Equipamento' : 'Novo Equipamento' }}</h3>
+        <h3>Novo Equipamento</h3>
         <div class="form-grid">
           <label class="field">
-            <span class="field-label">Cliente</span>
-            <select [(ngModel)]="form.clienteId" class="inp">
+            <span class="field-label">Cliente <span class="field-required">*</span></span>
+            <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
               <option [ngValue]="0" disabled>Selecione o cliente</option>
               @for (c of clientes; track c.id) {
                 <option [ngValue]="c.id">{{ c.nome }}</option>
               }
             </select>
+            @if (formErrors['clienteId']) { <span class="field-error">{{ formErrors['clienteId'] }}</span> }
           </label>
           <label class="field">
-            <span class="field-label">Marca</span>
-            <input [(ngModel)]="form.marca" placeholder="Marca" class="inp"/>
+            <span class="field-label">Marca <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.marca" placeholder="Marca" class="inp" [class.inp-error]="formErrors['marca']"/>
+            @if (formErrors['marca']) { <span class="field-error">{{ formErrors['marca'] }}</span> }
           </label>
           <label class="field">
-            <span class="field-label">Modelo</span>
-            <input [(ngModel)]="form.modelo" placeholder="Modelo" class="inp"/>
+            <span class="field-label">Modelo <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.modelo" placeholder="Modelo" class="inp" [class.inp-error]="formErrors['modelo']"/>
+            @if (formErrors['modelo']) { <span class="field-error">{{ formErrors['modelo'] }}</span> }
           </label>
           <label class="field">
             <span class="field-label">Nº Série</span>
-            <input [(ngModel)]="form.serial" placeholder="Nº Série" class="inp"/>
+            <input [(ngModel)]="form.serial" placeholder="Nº Série" class="inp" [class.inp-error]="formErrors['serial']"/>
+            @if (formErrors['serial']) { <span class="field-error">{{ formErrors['serial'] }}</span> }
           </label>
           <label class="field">
             <span class="field-label">IMEI / Patrimônio</span>
-            <input [(ngModel)]="form.imei" placeholder="IMEI / Patrimônio" class="inp"/>
+            <input [(ngModel)]="form.imei" placeholder="IMEI / Patrimônio" class="inp" [class.inp-error]="formErrors['imei']"/>
+            @if (formErrors['imei']) { <span class="field-error">{{ formErrors['imei'] }}</span> }
           </label>
         </div>
         <label class="field field-area">
           <span class="field-label">Observações</span>
           <textarea [(ngModel)]="form.observacoes" placeholder="Observações" class="inp inp-area" rows="2"></textarea>
         </label>
-        <div class="form-actions">
-          <button class="btn-primary" [disabled]="loading" (click)="salvar()">
-            @if (loading) { Salvando... } @else { Salvar }
-          </button>
-          <button class="btn-sec" (click)="cancelar()">Cancelar</button>
-        </div>
+        <button class="btn-primary" [disabled]="loading" (click)="salvar()">
+          @if (loading) { Salvando... } @else { Salvar }
+        </button>
         @if (erroGeral) {
           <p class="err">{{ erroGeral }}</p>
         }
@@ -124,6 +126,57 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
       }
     </div>
 
+    @if (showEditForm) {
+      <div class="form-card">
+        <h3>Editar Equipamento</h3>
+        <div class="form-grid">
+          <label class="field">
+            <span class="field-label">Cliente <span class="field-required">*</span></span>
+            <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
+              <option [ngValue]="0" disabled>Selecione o cliente</option>
+              @for (c of clientes; track c.id) {
+                <option [ngValue]="c.id">{{ c.nome }}</option>
+              }
+            </select>
+            @if (formErrors['clienteId']) { <span class="field-error">{{ formErrors['clienteId'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">Marca <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.marca" placeholder="Marca" class="inp" [class.inp-error]="formErrors['marca']"/>
+            @if (formErrors['marca']) { <span class="field-error">{{ formErrors['marca'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">Modelo <span class="field-required">*</span></span>
+            <input [(ngModel)]="form.modelo" placeholder="Modelo" class="inp" [class.inp-error]="formErrors['modelo']"/>
+            @if (formErrors['modelo']) { <span class="field-error">{{ formErrors['modelo'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">Nº Série</span>
+            <input [(ngModel)]="form.serial" placeholder="Nº Série" class="inp" [class.inp-error]="formErrors['serial']"/>
+            @if (formErrors['serial']) { <span class="field-error">{{ formErrors['serial'] }}</span> }
+          </label>
+          <label class="field">
+            <span class="field-label">IMEI / Patrimônio</span>
+            <input [(ngModel)]="form.imei" placeholder="IMEI / Patrimônio" class="inp" [class.inp-error]="formErrors['imei']"/>
+            @if (formErrors['imei']) { <span class="field-error">{{ formErrors['imei'] }}</span> }
+          </label>
+        </div>
+        <label class="field field-area">
+          <span class="field-label">Observações</span>
+          <textarea [(ngModel)]="form.observacoes" placeholder="Observações" class="inp inp-area" rows="2"></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="btn-primary" [disabled]="loading" (click)="salvar()">
+            @if (loading) { Salvando... } @else { Salvar }
+          </button>
+          <button class="btn-sec" (click)="cancelar()">Cancelar</button>
+        </div>
+        @if (erroGeral) {
+          <p class="err">{{ erroGeral }}</p>
+        }
+      </div>
+    }
+
     <app-confirm-dialog
       [show]="confirm.show"
       [title]="confirm.title"
@@ -136,7 +189,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     @if (sucesso) {
       <p class="success">{{ sucesso }}</p>
     }
-    @if (!showForm && erroGeral) {
+    @if (!showNewForm && !showEditForm && erroGeral) {
       <p class="err">{{ erroGeral }}</p>
     }
   `,
@@ -204,6 +257,10 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     }
     .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
     .inp-area { resize: vertical; font-family: inherit; }
+    .field-required { color: var(--danger); margin-left: 2px; }
+    .inp-error { border-color: var(--danger) !important; }
+    .inp-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.1) !important; }
+    .field-error { display: block; color: var(--danger); font-size: .75rem; margin-top: 4px; }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 11px 24px; background: var(--primary); color: #fff;
@@ -233,12 +290,14 @@ export class EquipamentosCrudComponent implements OnInit {
   constructor(
     private service: EquipamentosService,
     private clientesService: ClientesService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private el: ElementRef
   ) {}
 
   itens: Equipamento[] = [];
   clientes: Cliente[] = [];
-  showForm = false;
+  showNewForm = false;
+  showEditForm = false;
   editId: number | null = null;
   form: Partial<Equipamento> = {};
   loading = false;
@@ -249,6 +308,7 @@ export class EquipamentosCrudComponent implements OnInit {
   erro = '';
   sucesso = '';
   erroGeral = '';
+  formErrors: Record<string, string> = {};
   private destroy$ = new Subject<void>();
   confirm = { show: false, title: '', text: '', loading: false, item: null as Equipamento | null };
 
@@ -271,32 +331,35 @@ export class EquipamentosCrudComponent implements OnInit {
   }
 
   cancelar() {
-    this.showForm = false;
+    this.showNewForm = false;
+    this.showEditForm = false;
     this.editId = null;
     this.form = {};
+    this.formErrors = {};
   }
 
   salvar() {
-    if (!this.form.clienteId || !this.form.marca || !this.form.modelo) {
-      this.erroGeral = 'Cliente, Marca e Modelo são obrigatórios.';
-      return;
-    }
+    this.formErrors = {};
+    if (!this.form.clienteId) { this.formErrors['clienteId'] = 'Cliente é obrigatório.'; }
+    if (!this.form.marca) { this.formErrors['marca'] = 'Marca é obrigatória.'; }
+    if (!this.form.modelo) { this.formErrors['modelo'] = 'Modelo é obrigatório.'; }
+    if (Object.keys(this.formErrors).length) return;
     if (this.form.serial) {
       const dupSerial = this.itens.find(e => e.id !== this.editId && e.serial === this.form.serial);
-      if (dupSerial) { this.erroGeral = 'Já existe equipamento com este Nº de Série.'; return; }
+      if (dupSerial) { this.formErrors['serial'] = 'Já existe equipamento com este Nº de Série.'; return; }
     }
     if (this.form.imei) {
       const dupImei = this.itens.find(e => e.id !== this.editId && e.imei === this.form.imei);
-      if (dupImei) { this.erroGeral = 'Já existe equipamento com este IMEI.'; return; }
+      if (dupImei) { this.formErrors['imei'] = 'Já existe equipamento com este IMEI.'; return; }
     }
     this.loading = true;
     this.erroGeral = '';
     const cliente = this.clientes.find(c => c.id === this.form.clienteId);
     const payload: Equipamento = {
-      clienteId: this.form.clienteId,
+      clienteId: this.form.clienteId!,
       clienteNome: cliente?.nome ?? '',
-      marca: this.form.marca,
-      modelo: this.form.modelo,
+      marca: this.form.marca!,
+      modelo: this.form.modelo!,
       serial: this.form.serial,
       imei: this.form.imei,
       observacoes: this.form.observacoes
@@ -318,10 +381,36 @@ export class EquipamentosCrudComponent implements OnInit {
     });
   }
 
+  toggleForm() {
+    this.showNewForm = !this.showNewForm;
+    this.showEditForm = false;
+    this.editId = null;
+    this.form = {};
+    this.sucesso = '';
+    this.erroGeral = '';
+    this.formErrors = {};
+    if (this.showNewForm) this.scrollToForm();
+  }
+
+  private scrollToForm() {
+    setTimeout(() => {
+      const el = this.el.nativeElement.querySelector('.form-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el.querySelector('input, select, textarea') as HTMLElement)?.focus();
+      }
+    }, 100);
+  }
+
   editar(e: Equipamento) {
     this.editId = e.id ?? null;
     this.form = { ...e };
-    this.showForm = true;
+    this.showNewForm = false;
+    this.showEditForm = true;
+    this.sucesso = '';
+    this.erroGeral = '';
+    this.formErrors = {};
+    this.scrollToForm();
   }
 
   confirmExcluir(e: Equipamento) {
