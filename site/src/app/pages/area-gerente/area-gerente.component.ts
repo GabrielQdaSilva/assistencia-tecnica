@@ -398,8 +398,8 @@ export class AreaGerenteComponent implements OnInit, OnDestroy {
   }
 
   private calcularKPIs() {
-    const entregues = this.ordens.filter(o => o.status === 'Entregue');
-    const abertas = this.ordens.filter(o => o.status !== 'Entregue');
+    const entregues = this.ordens.filter(o => o.status === 'Pronto' || o.status === 'Entregue');
+    const abertas = this.ordens.filter(o => o.status !== 'Pronto' && o.status !== 'Entregue');
     this.kpi.ordensFechadas = entregues.length;
     this.kpi.faturamentoTotal = entregues.reduce((s, o) => s + (o.valorTotal ?? 0), 0);
     this.kpi.ticketMedio = entregues.length ? this.kpi.faturamentoTotal / entregues.length : 0;
