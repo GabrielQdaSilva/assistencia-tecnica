@@ -1,6 +1,8 @@
+<a href="#main-content" class="skip-link">Pular para conteúdo principal</a>
+
 @if (!isLogin && !isDashboard) {
   <app-header />
 }
-<main [class.home-layout]="isHome" [class.no-header]="isLogin || isDashboard">
+<main id="main-content" [class.home-layout]="isHome" [class.no-header]="isLogin || isDashboard">
   <router-outlet />
 </main>

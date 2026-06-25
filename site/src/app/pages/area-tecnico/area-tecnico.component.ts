@@ -30,8 +30,8 @@ import { ChamadosService } from '../../core/services/chamados.service';
             @if (auth.getUser(); as user) {
               <div class="dash-user">
                 <span class="dash-user-name">{{ user.nome }}</span>
-                <button class="dash-logout" (click)="sair()" title="Sair">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <button class="dash-logout" (click)="sair()" aria-label="Sair">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
               </div>
             }
@@ -188,8 +188,8 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <option value="Pronto">Pronto</option>
               <option value="Entregue">Entregue</option>
             </select>
-            <button class="btn-sec btn-sm-icon" (click)="exportarCSV()" title="Exportar CSV">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <button class="btn-sec btn-sm-icon" (click)="exportarCSV()" aria-label="Exportar CSV">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             </button>
             <div class="view-toggle">
               <button class="view-btn" [class.active]="viewMode === 'table'" (click)="viewMode='table'" title="Visualizar tabela">
@@ -210,22 +210,28 @@ import { ChamadosService } from '../../core/services/chamados.service';
             <h3>{{ editId ? 'Editar Ordem #' + editId : 'Nova Ordem de Serviço' }}</h3>
             <div class="form-grid">
               <label class="field">
-                <span class="field-label">Técnico</span>
-                <select [(ngModel)]="form.tecnicoId" class="inp">
+                <span class="field-label">Técnico <span class="field-required">*</span></span>
+                <select [(ngModel)]="form.tecnicoId" class="inp" [class.inp-error]="formErrors['tecnicoId']">
                   <option [ngValue]="0" disabled>Selecione...</option>
                   @for (f of funcionarios; track f.id) {
                     <option [ngValue]="f.id">{{ f.nome }} ({{ f.cargo }})</option>
                   }
                 </select>
+                @if (formErrors['tecnicoId']) {
+                  <span class="field-error">{{ formErrors['tecnicoId'] }}</span>
+                }
               </label>
               <label class="field">
-                <span class="field-label">Cliente</span>
-                <select [(ngModel)]="form.clienteId" class="inp">
+                <span class="field-label">Cliente <span class="field-required">*</span></span>
+                <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
                   <option [ngValue]="0" disabled>Selecione...</option>
                   @for (c of clientes; track c.id) {
                     <option [ngValue]="c.id">{{ c.nome }}</option>
                   }
                 </select>
+                @if (formErrors['clienteId']) {
+                  <span class="field-error">{{ formErrors['clienteId'] }}</span>
+                }
               </label>
               <label class="field">
                 <span class="field-label">Equipamento</span>
@@ -375,7 +381,40 @@ import { ChamadosService } from '../../core/services/chamados.service';
         @if (viewMode === 'table') {
           <div class="table-wrapper">
             @if (loading) {
-              <p class="empty">Carregando...</p>
+              <table aria-label="Carregando ordens de serviço">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Prioridade</th>
+                    <th>Técnico</th>
+                    <th>Cliente</th>
+                    <th>Aparelho</th>
+                    <th>Status</th>
+                    <th>Entrada</th>
+                    <th>Prev.</th>
+                    <th>Valor</th>
+                    <th>Garantia</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <tr>
+                      <td><div class="skeleton" style="width:30px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:60px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:100px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:120px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:80px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:70px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:90px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:40px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:60px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:50px;height:16px"></div></td>
+                      <td><div class="skeleton" style="width:80px;height:16px"></div></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             } @else if (ordensFiltradas.length === 0) {
               <p class="empty">Nenhuma ordem de serviço encontrada.</p>
             } @else {
@@ -729,6 +768,7 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
   showForm = false;
   editId: number | null = null;
   form: Partial<OrdemServico> = {};
+  formErrors: Record<string, string> = {};
   saving = false;
   loading = false;
 
@@ -834,12 +874,15 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     this.showForm = false;
     this.editId = null;
     this.form = { prioridade: 'Normal', status: 'Na Fila' };
+    this.formErrors = {};
     this.showTimeline = false;
   }
 
   salvar() {
-    if (!this.form.tecnicoId) { this.mostrarToast('Selecione um técnico.', 'error'); this.saving = false; return; }
-    if (!this.form.clienteId) { this.mostrarToast('Selecione um cliente.', 'error'); this.saving = false; return; }
+    this.formErrors = {};
+    if (!this.form.tecnicoId) { this.formErrors['tecnicoId'] = 'Selecione um técnico.'; }
+    if (!this.form.clienteId) { this.formErrors['clienteId'] = 'Selecione um cliente.'; }
+    if (Object.keys(this.formErrors).length) { this.saving = false; return; }
     this.saving = true;
     const tecnico = this.funcionarios.find(f => f.id === this.form.tecnicoId);
     const cliente = this.clientes.find(c => c.id === this.form.clienteId);

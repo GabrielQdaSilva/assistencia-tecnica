@@ -49,7 +49,7 @@
                              "id":  10,
                              "telefone":  "11910101010",
                              "salario":  3500,
-                             "cargo":  "TÈcnica",
+                             "cargo":  "T√©cnica",
                              "email":  "ana.beatriz@email.com",
                              "nome":  "Ana Beatriz",
                              "senha":  "1234"
@@ -67,7 +67,7 @@
                              "id":  12,
                              "telefone":  "11912121212",
                              "salario":  3400,
-                             "cargo":  "TÈcnica",
+                             "cargo":  "T√©cnica",
                              "email":  "daniela.oliveira@email.com",
                              "nome":  "Daniela Oliveira",
                              "senha":  "1234"
@@ -94,7 +94,7 @@
                              "id":  15,
                              "telefone":  "11915151515",
                              "salario":  3700,
-                             "cargo":  "TÈcnico",
+                             "cargo":  "T√©cnico",
                              "email":  "gabriel.souza@email.com",
                              "nome":  "Gabriel Souza",
                              "senha":  "1234"
@@ -173,7 +173,7 @@
                          "telefone":  "11917171717",
                          "senha":  "1234",
                          "ativo":  true,
-                         "nome":  "Jo„o Pedro Alves",
+                         "nome":  "Jo√£o Pedro Alves",
                          "email":  "joao.pedro@email.com"
                      },
                      {
@@ -302,7 +302,7 @@
                              "clienteNome":  "Ana Oliveira",
                              "imei":  "351111111111111",
                              "marca":  "Motorola",
-                             "observacoes":  "Com pelÌcula"
+                             "observacoes":  "Com pel√≠cula"
                          },
                          {
                              "clienteId":  3,
@@ -329,7 +329,7 @@
                              "id":  14,
                              "serial":  "SAM14IJK01",
                              "modelo":  "Galaxy A54",
-                             "clienteNome":  "Jo„o Pedro Alves",
+                             "clienteNome":  "Jo√£o Pedro Alves",
                              "imei":  "351414141414141",
                              "marca":  "Samsung",
                              "observacoes":  "Garantia vigente"
@@ -584,9 +584,9 @@
                     {
                         "id":  14,
                         "estoqueMinimo":  5,
-                        "categoria":  "MemÛria",
+                        "categoria":  "Mem√≥ria",
                         "valorVenda":  159,
-                        "nome":  "MemÛria RAM DDR4 8GB",
+                        "nome":  "Mem√≥ria RAM DDR4 8GB",
                         "quantidade":  10,
                         "valorCusto":  95
                     },
@@ -602,9 +602,9 @@
                     {
                         "id":  16,
                         "estoqueMinimo":  5,
-                        "categoria":  "ConsumÌvel",
+                        "categoria":  "Consum√≠vel",
                         "valorVenda":  35,
-                        "nome":  "Pasta TÈrmica Corsair XTM50",
+                        "nome":  "Pasta T√©rmica Corsair XTM50",
                         "quantidade":  12,
                         "valorCusto":  12
                     }

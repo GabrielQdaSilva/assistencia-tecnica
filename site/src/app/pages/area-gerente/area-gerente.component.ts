@@ -6,16 +6,16 @@ import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { OrdensService } from '../../core/services/ordens.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { FuncionariosService } from '../../core/services/funcionarios.service';
-import { EquipamentosService } from '../../core/services/equipamentos.service';
 import { AuthService } from '../../core/services/auth.service';
-import { OrdemServico, Cliente, Funcionario, Equipamento, Chamado } from '../../core/types/types';
-import { ChamadosService } from '../../core/services/chamados.service';
+import { OrdemServico, Cliente, Funcionario } from '../../core/types/types';
 import { ChamadosCrudComponent } from '../../components/crud/chamados-crud.component';
+import { FuncionariosCrudComponent } from '../../components/crud/funcionarios-crud.component';
+import { ClientesCrudComponent } from '../../components/crud/clientes-crud.component';
 
 @Component({
   selector: 'app-area-gerente',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ChamadosCrudComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ChamadosCrudComponent, FuncionariosCrudComponent, ClientesCrudComponent],
   template: `
     <div class="dashboard">
       <header class="dash-header">
@@ -163,51 +163,12 @@ import { ChamadosCrudComponent } from '../../components/crud/chamados-crud.compo
 
         @if (aba === 'usuarios') {
           <div class="section">
-            <div class="users-header">
-              <h3>Gerenciar Usuários</h3>
-            </div>
-            <div class="users-grid">
-              <div class="users-col">
-                <h4>Funcionários</h4>
-                <div class="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr><th>Nome</th><th>Cargo</th><th>E-mail</th><th>Salário</th></tr>
-                    </thead>
-                    <tbody>
-                      @for (f of funcionarios; track f.id) {
-                        <tr>
-                          <td>{{ f.nome }}</td>
-                          <td>{{ f.cargo }}</td>
-                          <td>{{ f.email }}</td>
-                          <td>R$ {{ f.salario?.toFixed(2) }}</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="users-col">
-                <h4>Clientes</h4>
-                <div class="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Tipo</th></tr>
-                    </thead>
-                    <tbody>
-                      @for (c of clientes; track c.id) {
-                        <tr>
-                          <td>{{ c.nome }}</td>
-                          <td>{{ c.email }}</td>
-                          <td>{{ c.telefone }}</td>
-                          <td>{{ c.tipo }}</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            <h3>Funcionários</h3>
+            <app-funcionarios-crud/>
+          </div>
+          <div class="section">
+            <h3>Clientes</h3>
+            <app-clientes-crud/>
           </div>
         }
 
@@ -327,9 +288,6 @@ import { ChamadosCrudComponent } from '../../components/crud/chamados-crud.compo
 
     tfoot td { font-weight: 600; color: var(--text); border-top: 2px solid var(--primary); }
 
-    .users-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    @media (max-width: 860px) { .users-grid { grid-template-columns: 1fr; } }
-
     .calc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; border-left: 3px solid var(--primary); }
     .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
@@ -363,7 +321,6 @@ export class AreaGerenteComponent implements OnInit, OnDestroy {
     private ordensService: OrdensService,
     private clientesService: ClientesService,
     private funcionariosService: FuncionariosService,
-    private chamadosService: ChamadosService,
     private router: Router,
     public auth: AuthService,
     private cdr: ChangeDetectorRef

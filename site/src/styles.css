@@ -163,7 +163,8 @@ h4 { font-size: var(--text-lg); }
   text-transform: uppercase;
   letter-spacing: .05em;
 }
-.field-error { font-size: var(--text-xs); color: var(--danger); margin-top: 2px; }
+.field-error { font-size: var(--text-xs); color: var(--danger); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+.field-required { color: var(--danger); }
 
 select.inp {
   appearance: none;
@@ -423,6 +424,19 @@ td.actions .btn-sm + .btn-sm { margin-left: 6px; }
   overflow: hidden; clip: rect(0,0,0,0);
   white-space: nowrap; border: 0;
 }
+
+/* ===== Skip to Content ===== */
+.skip-link {
+  position: fixed; top: -100%; left: 50%; z-index: 9999;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: var(--primary); color: #fff;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  font-size: var(--text-base); font-weight: 600;
+  text-decoration: none;
+  transition: top var(--transition);
+}
+.skip-link:focus { top: 0; outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ===== Print Styles ===== */
 @media print {
