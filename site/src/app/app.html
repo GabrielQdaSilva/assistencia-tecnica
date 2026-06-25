@@ -1,4 +1,6 @@
-<app-header />
-<main [class.home-layout]="isHome">
+@if (!isLogin && !isDashboard) {
+  <app-header />
+}
+<main [class.home-layout]="isHome" [class.no-header]="isLogin || isDashboard">
   <router-outlet />
 </main>
