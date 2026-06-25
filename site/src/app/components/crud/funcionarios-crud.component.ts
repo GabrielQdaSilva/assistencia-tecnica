@@ -327,16 +327,20 @@ export class FuncionariosCrudComponent implements OnInit {
   }
   confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
+  private n(v: string): string {
+    return v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
   consultar() {
     this.erro = '';
     this.resultados = [];
     if (!this.valor) { this.cdr.detectChanges(); return; }
-    const val = this.valor.toLowerCase();
+    const val = this.n(this.valor);
     if (this.campo === 'id') {
       this.resultados = this.itens.filter(f => String(f.id).includes(val));
       if (this.resultados.length === 0) this.erro = 'Não encontrado.';
     } else {
-      this.resultados = this.itens.filter(f => String(f[this.campo as keyof Funcionario] ?? '').toLowerCase().includes(val));
+      this.resultados = this.itens.filter(f => this.n(String(f[this.campo as keyof Funcionario] ?? '')).includes(val));
       if (this.resultados.length === 0) this.erro = 'Não encontrado.';
     }
     this.cdr.detectChanges();

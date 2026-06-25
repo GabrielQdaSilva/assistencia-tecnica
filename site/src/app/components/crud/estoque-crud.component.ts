@@ -361,16 +361,20 @@ export class EstoqueCrudComponent implements OnInit {
   }
   confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
+  private n(v: string): string {
+    return v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
   consultar() {
     this.erro = '';
     this.resultados = [];
     if (!this.valor) { this.cdr.detectChanges(); return; }
-    const val = this.valor.toLowerCase();
+    const val = this.n(this.valor);
     if (this.campo === 'id') {
       this.resultados = this.itens.filter(p => String(p.id).includes(val));
       if (this.resultados.length === 0) this.erro = 'Não encontrado.';
     } else {
-      this.resultados = this.itens.filter(p => String(p[this.campo as keyof EstoqueItem] ?? '').toLowerCase().includes(val));
+      this.resultados = this.itens.filter(p => this.n(String(p[this.campo as keyof EstoqueItem] ?? '')).includes(val));
       if (this.resultados.length === 0) this.erro = 'Não encontrado.';
     }
     this.cdr.detectChanges();

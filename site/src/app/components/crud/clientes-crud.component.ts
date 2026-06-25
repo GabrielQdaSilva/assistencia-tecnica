@@ -361,16 +361,20 @@ export class ClientesCrudComponent implements OnInit, OnDestroy {
   }
   confirmCancel() { this.confirm = { show: false, title: '', text: '', loading: false, item: null }; }
 
+  private n(v: string): string {
+    return v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
   consultar() {
     this.erro = '';
     this.resultados = [];
     if (!this.valor) { this.cdr.detectChanges(); return; }
-    const val = this.valor.toLowerCase();
+    const val = this.n(this.valor);
     if (this.campo === 'id') {
       this.resultados = this.ativos.filter(c => String(c.id).includes(val));
       if (this.resultados.length === 0) this.erro = 'Não encontrado.';
     } else {
-      this.resultados = this.ativos.filter(c => String(c[this.campo as keyof Cliente] ?? '').toLowerCase().includes(val));
+      this.resultados = this.ativos.filter(c => this.n(String(c[this.campo as keyof Cliente] ?? '')).includes(val));
       if (this.resultados.length === 0) this.erro = 'Não encontrado.';
     }
     this.cdr.detectChanges();
