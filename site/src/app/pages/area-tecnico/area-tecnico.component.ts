@@ -108,7 +108,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <span class="analytics-value">R$ {{ analytics.faturamentoTotal.toFixed(2) }}</span>
-            <span class="analytics-sub">{{ analytics.ordensFechadas }} OS concluídas</span>
+            <span class="analytics-sub">{{ analytics.ordensFechadas }} OS finalizadas</span>
           </div>
           <div class="analytics-card">
             <div class="analytics-card-header">
@@ -810,7 +810,7 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
   }
 
   private calcularAnalytics() {
-    const fechadas = this.ordens.filter(o => o.status === 'Entregue');
+    const fechadas = this.ordens.filter(o => o.status === 'Pronto' || o.status === 'Entregue');
     const aprovadas = this.ordens.filter(o => o.status === 'Orçamento Aprovado' || o.status === 'Pronto' || o.status === 'Entregue');
     const totalOrcamentos = this.ordens.filter(o => o.status !== 'Na Fila').length;
 
