@@ -14,7 +14,7 @@ import { AuthService } from '../../core/services/auth.service';
         <nav class="nav">
           <a routerLink="/area-tecnico" class="nav-highlight">Área do Técnico</a>
           <a href="#servicos">Serviços</a>
-          <a href="#precos">Preços</a>
+          <a>Orçamento</a>
           <a routerLink="/login">Gerenciamento</a>
           @if (auth.getUser(); as user) {
             <div class="nav-user">

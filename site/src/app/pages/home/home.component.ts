@@ -302,7 +302,7 @@ import { EquipamentosService } from '../../core/services/equipamentos.service';
     }
     .section-inner { max-width: 1120px; margin: 0 auto; }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); text-align: center; }
-    .stat-item { padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border); transition: all var(--transition-slow); }
+    .stat-item { padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border); transition: all var(--transition-slow); display: flex; flex-direction: column; gap: 4px; }
     .stat-item:hover { border-color: rgba(6,182,212,.2); transform: translateY(-2px); box-shadow: var(--shadow); }
     .stat-num { font-size: var(--text-2xl); font-weight: 800; color: var(--primary); }
     .stat-label { font-size: var(--text-sm); color: var(--text-muted); }

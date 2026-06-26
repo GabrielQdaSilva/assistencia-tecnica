@@ -24,12 +24,12 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
         <div class="form-grid">
           <label class="field">
             <span class="field-label">Cliente <span class="field-required">*</span></span>
-            <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
-              <option [ngValue]="0" disabled>Selecione o cliente</option>
+            <input [(ngModel)]="clienteSearch" list="clientes-ee" placeholder="Digite o nome do cliente..." class="inp" [class.inp-error]="formErrors['clienteId']" (input)="onClienteInput()"/>
+            <datalist id="clientes-ee">
               @for (c of clientes; track c.id) {
-                <option [ngValue]="c.id">{{ c.nome }}</option>
+                <option [value]="c.nome"></option>
               }
-            </select>
+            </datalist>
             @if (formErrors['clienteId']) { <span class="field-error">{{ formErrors['clienteId'] }}</span> }
           </label>
           <label class="field">
@@ -132,12 +132,12 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
         <div class="form-grid">
           <label class="field">
             <span class="field-label">Cliente <span class="field-required">*</span></span>
-            <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
-              <option [ngValue]="0" disabled>Selecione o cliente</option>
+            <input [(ngModel)]="clienteSearch" list="clientes-ee" placeholder="Digite o nome do cliente..." class="inp" [class.inp-error]="formErrors['clienteId']" (input)="onClienteInput()"/>
+            <datalist id="clientes-ee">
               @for (c of clientes; track c.id) {
-                <option [ngValue]="c.id">{{ c.nome }}</option>
+                <option [value]="c.nome"></option>
               }
-            </select>
+            </datalist>
             @if (formErrors['clienteId']) { <span class="field-error">{{ formErrors['clienteId'] }}</span> }
           </label>
           <label class="field">
@@ -296,6 +296,11 @@ export class EquipamentosCrudComponent implements OnInit {
 
   itens: Equipamento[] = [];
   clientes: Cliente[] = [];
+  clienteSearch = '';
+  onClienteInput() {
+    const c = this.clientes.find(cl => cl.nome === this.clienteSearch);
+    this.form.clienteId = c ? c.id : undefined;
+  }
   showNewForm = false;
   showEditForm = false;
   editId: number | null = null;
@@ -336,6 +341,7 @@ export class EquipamentosCrudComponent implements OnInit {
     this.editId = null;
     this.form = {};
     this.formErrors = {};
+    this.clienteSearch = '';
   }
 
   salvar() {
@@ -389,6 +395,7 @@ export class EquipamentosCrudComponent implements OnInit {
     this.sucesso = '';
     this.erroGeral = '';
     this.formErrors = {};
+    this.clienteSearch = '';
     if (this.showNewForm) this.scrollToForm();
   }
 
@@ -410,6 +417,8 @@ export class EquipamentosCrudComponent implements OnInit {
     this.sucesso = '';
     this.erroGeral = '';
     this.formErrors = {};
+    const c = this.clientes.find(cl => cl.id === e.clienteId);
+    this.clienteSearch = c ? c.nome : '';
     this.scrollToForm();
   }
 

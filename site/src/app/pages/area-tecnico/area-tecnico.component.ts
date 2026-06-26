@@ -42,7 +42,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
       <!-- Stats Dashboard -->
       <div class="dash-stats">
         <div class="dash-stats-inner">
-          <div class="stat-card" (click)="filtroStatus = ''; aplicarFiltro()">
+          <div class="stat-card" (click)="filtroCampo='all'; filtroValor=''; consultar()">
             <div class="stat-card-icon stat-icon-all">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
             </div>
@@ -51,7 +51,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <span class="stat-card-label">Total</span>
             </div>
           </div>
-          <div class="stat-card" (click)="filtroStatus = 'Na Fila'; aplicarFiltro()">
+          <div class="stat-card" (click)="filtroCampo='status'; filtroValor='Na Fila'; consultar()">
             <div class="stat-card-icon stat-icon-fila">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
@@ -60,7 +60,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <span class="stat-card-label">Na Fila</span>
             </div>
           </div>
-          <div class="stat-card" (click)="filtroStatus = 'Em Análise'; aplicarFiltro()">
+          <div class="stat-card" (click)="filtroCampo='status'; filtroValor='Em Análise'; consultar()">
             <div class="stat-card-icon stat-icon-analise">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
@@ -69,7 +69,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <span class="stat-card-label">Em Análise</span>
             </div>
           </div>
-          <div class="stat-card" (click)="filtroStatus = 'Orçamento Aprovado'; aplicarFiltro()">
+          <div class="stat-card" (click)="filtroCampo='status'; filtroValor='Orçamento Aprovado'; consultar()">
             <div class="stat-card-icon stat-icon-aprovado">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </div>
@@ -78,7 +78,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <span class="stat-card-label">Orç. Aprovado</span>
             </div>
           </div>
-          <div class="stat-card" (click)="filtroStatus = 'Pronto'; aplicarFiltro()">
+          <div class="stat-card" (click)="filtroCampo='status'; filtroValor='Pronto'; consultar()">
             <div class="stat-card-icon stat-icon-pronto">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
@@ -87,7 +87,7 @@ import { ChamadosService } from '../../core/services/chamados.service';
               <span class="stat-card-label">Pronto</span>
             </div>
           </div>
-          <div class="stat-card" (click)="filtroStatus = 'Entregue'; aplicarFiltro()">
+          <div class="stat-card" (click)="filtroCampo='status'; filtroValor='Entregue'; consultar()">
             <div class="stat-card-icon stat-icon-entregue">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
@@ -178,16 +178,28 @@ import { ChamadosService } from '../../core/services/chamados.service';
         <div class="dash-heading">
           <h2>Ordens de Serviço</h2>
           <div class="dash-heading-actions">
-            <input [(ngModel)]="filtroDataInicio" type="date" (change)="aplicarFiltro()" class="inp inp-sm" title="Data início"/>
-            <input [(ngModel)]="filtroDataFim" type="date" (change)="aplicarFiltro()" class="inp inp-sm" title="Data fim"/>
-            <select [(ngModel)]="filtroStatus" (change)="aplicarFiltro()" class="inp inp-sm">
-              <option value="">Todos os status</option>
-              <option value="Na Fila">Na Fila</option>
-              <option value="Em Análise">Em Análise</option>
-              <option value="Orçamento Aprovado">Orçamento Aprovado</option>
-              <option value="Pronto">Pronto</option>
-              <option value="Entregue">Entregue</option>
-            </select>
+            <div class="scope-buttons">
+              <button class="scope-btn" [class.active]="filtroCampo === 'all'" (click)="filtroCampo='all'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Todos</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'id'" (click)="filtroCampo='id'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">ID</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'clienteNome'" (click)="filtroCampo='clienteNome'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Cliente</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'tecnicoNome'" (click)="filtroCampo='tecnicoNome'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Técnico</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'aparelho'" (click)="filtroCampo='aparelho'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Aparelho</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'defeito'" (click)="filtroCampo='defeito'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Defeito</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'status'" (click)="filtroCampo='status'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Status</button>
+              <button class="scope-btn" [class.active]="filtroCampo === 'dataEntrada'" (click)="filtroCampo='dataEntrada'; filtroValor=''; filtroDia=''; filtroMes=''; filtroAno=''; consultar()">Data</button>
+            </div>
+            <ng-container *ngIf="filtroCampo !== 'dataEntrada'; else dataFiltro">
+              <input [(ngModel)]="filtroValor" (input)="consultar()" placeholder="Buscar..." class="inp inp-sm"/>
+            </ng-container>
+            <ng-template #dataFiltro>
+              <div class="date-filtro">
+                <input (input)="onInputAno($event)" placeholder="yyyy" maxlength="4" class="inp inp-date" inputmode="numeric" pattern="\d*"/>
+                <span class="date-sep">-</span>
+                <input (input)="onInputMes($event)" placeholder="mm" maxlength="2" class="inp inp-date" inputmode="numeric" pattern="\d*"/>
+                <span class="date-sep">-</span>
+                <input (input)="onInputDia($event)" placeholder="dd" maxlength="2" class="inp inp-date" inputmode="numeric" pattern="\d*"/>
+              </div>
+            </ng-template>
             <button class="btn-sec btn-sm-icon" (click)="exportarCSV()" aria-label="Exportar CSV">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             </button>
@@ -211,36 +223,36 @@ import { ChamadosService } from '../../core/services/chamados.service';
             <div class="form-grid">
               <label class="field">
                 <span class="field-label">Técnico <span class="field-required">*</span></span>
-                <select [(ngModel)]="form.tecnicoId" class="inp" [class.inp-error]="formErrors['tecnicoId']">
-                  <option [ngValue]="0" disabled>Selecione...</option>
+                <input [(ngModel)]="tecnicoSearch" list="tecnicos" placeholder="Digite o nome do técnico..." class="inp" [class.inp-error]="formErrors['tecnicoId']" (input)="onTecnicoInput()"/>
+                <datalist id="tecnicos">
                   @for (f of funcionarios; track f.id) {
-                    <option [ngValue]="f.id">{{ f.nome }} ({{ f.cargo }})</option>
+                    <option [value]="fmtTecnico(f)"></option>
                   }
-                </select>
+                </datalist>
                 @if (formErrors['tecnicoId']) {
                   <span class="field-error">{{ formErrors['tecnicoId'] }}</span>
                 }
               </label>
               <label class="field">
                 <span class="field-label">Cliente <span class="field-required">*</span></span>
-                <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
-                  <option [ngValue]="0" disabled>Selecione...</option>
+                <input [(ngModel)]="clienteSearch" list="clientes" placeholder="Digite o nome do cliente..." class="inp" [class.inp-error]="formErrors['clienteId']" (input)="onClienteInput()"/>
+                <datalist id="clientes">
                   @for (c of clientes; track c.id) {
-                    <option [ngValue]="c.id">{{ c.nome }}</option>
+                    <option [value]="fmtCliente(c)"></option>
                   }
-                </select>
+                </datalist>
                 @if (formErrors['clienteId']) {
                   <span class="field-error">{{ formErrors['clienteId'] }}</span>
                 }
               </label>
               <label class="field">
                 <span class="field-label">Equipamento</span>
-                <select [(ngModel)]="form.equipamentoId" class="inp">
-                  <option [ngValue]="0" disabled>Selecione...</option>
+                <input [(ngModel)]="equipamentoSearch" list="equipamentos" placeholder="Digite marca, modelo ou cliente..." class="inp" (input)="onEquipamentoInput()"/>
+                <datalist id="equipamentos">
                   @for (e of equipamentos; track e.id) {
-                    <option [ngValue]="e.id">{{ e.marca }} {{ e.modelo }} - {{ e.clienteNome }}</option>
+                    <option [value]="fmtEquipamento(e)"></option>
                   }
-                </select>
+                </datalist>
               </label>
               <label class="field">
                 <span class="field-label">Aparelho</span>
@@ -453,36 +465,36 @@ import { ChamadosService } from '../../core/services/chamados.service';
             <div class="form-grid">
               <label class="field">
                 <span class="field-label">Técnico <span class="field-required">*</span></span>
-                <select [(ngModel)]="form.tecnicoId" class="inp" [class.inp-error]="formErrors['tecnicoId']">
-                  <option [ngValue]="0" disabled>Selecione...</option>
+                <input [(ngModel)]="tecnicoSearch" list="tecnicos" placeholder="Digite o nome do técnico..." class="inp" [class.inp-error]="formErrors['tecnicoId']" (input)="onTecnicoInput()"/>
+                <datalist id="tecnicos">
                   @for (f of funcionarios; track f.id) {
-                    <option [ngValue]="f.id">{{ f.nome }} ({{ f.cargo }})</option>
+                    <option [value]="fmtTecnico(f)"></option>
                   }
-                </select>
+                </datalist>
                 @if (formErrors['tecnicoId']) {
                   <span class="field-error">{{ formErrors['tecnicoId'] }}</span>
                 }
               </label>
               <label class="field">
                 <span class="field-label">Cliente <span class="field-required">*</span></span>
-                <select [(ngModel)]="form.clienteId" class="inp" [class.inp-error]="formErrors['clienteId']">
-                  <option [ngValue]="0" disabled>Selecione...</option>
+                <input [(ngModel)]="clienteSearch" list="clientes" placeholder="Digite o nome do cliente..." class="inp" [class.inp-error]="formErrors['clienteId']" (input)="onClienteInput()"/>
+                <datalist id="clientes">
                   @for (c of clientes; track c.id) {
-                    <option [ngValue]="c.id">{{ c.nome }}</option>
+                    <option [value]="fmtCliente(c)"></option>
                   }
-                </select>
+                </datalist>
                 @if (formErrors['clienteId']) {
                   <span class="field-error">{{ formErrors['clienteId'] }}</span>
                 }
               </label>
               <label class="field">
                 <span class="field-label">Equipamento</span>
-                <select [(ngModel)]="form.equipamentoId" class="inp">
-                  <option [ngValue]="0" disabled>Selecione...</option>
+                <input [(ngModel)]="equipamentoSearch" list="equipamentos" placeholder="Digite marca, modelo ou cliente..." class="inp" (input)="onEquipamentoInput()"/>
+                <datalist id="equipamentos">
                   @for (e of equipamentos; track e.id) {
-                    <option [ngValue]="e.id">{{ e.marca }} {{ e.modelo }} - {{ e.clienteNome }}</option>
+                    <option [value]="fmtEquipamento(e)"></option>
                   }
-                </select>
+                </datalist>
               </label>
               <label class="field">
                 <span class="field-label">Aparelho</span>
@@ -712,7 +724,19 @@ import { ChamadosService } from '../../core/services/chamados.service';
       margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
     }
     .dash-heading h2 { font-size: 1.5rem; font-weight: 700; color: var(--text); }
-    .dash-heading-actions { display: flex; gap: 10px; align-items: center; }
+    .dash-heading-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .scope-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+    .scope-btn {
+      padding: 7px 14px; font-size: .75rem; font-weight: 600;
+      background: var(--surface-hover); color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: 20px;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .scope-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .scope-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .date-filtro { display: flex; gap: 2px; align-items: center; }
+    .date-sep { color: var(--text-muted); font-weight: 600; }
+    .inp-date { width: 80px; text-align: center; }
     .inp-sm { max-width: 200px; }
 
     .form-card {
@@ -878,9 +902,73 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
   equipamentos: Equipamento[] = [];
   ordens: OrdemServico[] = [];
   ordensFiltradas: OrdemServico[] = [];
-  filtroStatus = '';
-  filtroDataInicio = '';
-  filtroDataFim = '';
+  filtroCampo = 'all';
+  filtroValor = '';
+  filtroDia = '';
+  filtroMes = '';
+  filtroAno = '';
+
+  private diasNoMes(mes: number, ano: number): number {
+    if (mes < 1 || mes > 12 || !ano) return 31;
+    return new Date(ano, mes, 0).getDate();
+  }
+
+  onInputAno(e: Event) {
+    const el = e.target as HTMLInputElement;
+    this.filtroAno = el.value.replace(/\D/g, '');
+    el.value = this.filtroAno;
+    this.onMesAnoChange();
+  }
+
+  onInputMes(e: Event) {
+    const el = e.target as HTMLInputElement;
+    this.filtroMes = el.value.replace(/\D/g, '');
+    el.value = this.filtroMes;
+    this.onMesAnoChange();
+  }
+
+  onInputDia(e: Event) {
+    const el = e.target as HTMLInputElement;
+    this.filtroDia = el.value.replace(/\D/g, '');
+    el.value = this.filtroDia;
+    const m = parseInt(this.filtroMes, 10);
+    const a = parseInt(this.filtroAno, 10);
+    const max = this.diasNoMes(m, a);
+    const d = parseInt(this.filtroDia, 10);
+    if (d < 1) this.filtroDia = '1';
+    else if (d > max) this.filtroDia = String(max);
+    this.consultar();
+  }
+
+  private onMesAnoChange() {
+    const m = parseInt(this.filtroMes, 10);
+    const a = parseInt(this.filtroAno, 10);
+    const max = this.diasNoMes(m, a);
+    const d = parseInt(this.filtroDia, 10);
+    if (d > max) this.filtroDia = String(max);
+    this.consultar();
+  }
+
+  tecnicoSearch = '';
+  clienteSearch = '';
+  equipamentoSearch = '';
+
+  fmtTecnico(f: Funcionario) { return `${f.nome} (${f.cargo})`; }
+  fmtCliente(c: Cliente) { return c.nome; }
+  fmtEquipamento(e: Equipamento) { return `${e.marca} ${e.modelo} - ${e.clienteNome}`; }
+
+  onTecnicoInput() {
+    const match = this.funcionarios.find(f => this.fmtTecnico(f) === this.tecnicoSearch);
+    this.form.tecnicoId = match ? match.id : undefined;
+  }
+  onClienteInput() {
+    const match = this.clientes.find(c => this.fmtCliente(c) === this.clienteSearch);
+    this.form.clienteId = match ? match.id : undefined;
+  }
+  onEquipamentoInput() {
+    const match = this.equipamentos.find(e => this.fmtEquipamento(e) === this.equipamentoSearch);
+    this.form.equipamentoId = match ? match.id : undefined;
+  }
 
   showNewForm = false;
   showEditForm = false;
@@ -933,7 +1021,7 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
         this.clientes = r.clientes;
         this.equipamentos = r.equipamentos;
         this.ordens = r.ordens;
-        this.aplicarFiltro();
+        this.consultar();
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -941,18 +1029,39 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     });
   }
 
-  aplicarFiltro() {
+  private n(v: string): string {
+    return v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  consultar() {
     let base = [...this.ordens];
-
-    if (this.filtroStatus) {
-      base = base.filter(o => o.status === this.filtroStatus);
-    }
-
-    if (this.filtroDataInicio) {
-      base = base.filter(o => o.dataEntrada >= this.filtroDataInicio);
-    }
-    if (this.filtroDataFim) {
-      base = base.filter(o => o.dataEntrada <= this.filtroDataFim);
+    if (this.filtroCampo !== 'all') {
+      if (this.filtroCampo === 'dataEntrada') {
+        const diaRaw = this.filtroDia;
+        const mesRaw = this.filtroMes;
+        const anoRaw = this.filtroAno;
+        if (diaRaw || mesRaw || anoRaw) {
+          base = base.filter(o => {
+            const dt = String(o.dataEntrada ?? '');
+            if (anoRaw && dt.slice(0, anoRaw.length) !== anoRaw) return false;
+            if (mesRaw) {
+              const mPrefix = dt.slice(5, 5 + mesRaw.length);
+              if (mPrefix !== mesRaw && dt.slice(5, 7) !== mesRaw.padStart(2, '0')) return false;
+            }
+            if (diaRaw) {
+              const dPrefix = dt.slice(8, 8 + diaRaw.length);
+              if (dPrefix !== diaRaw && dt.slice(8, 10) !== diaRaw.padStart(2, '0')) return false;
+            }
+            return true;
+          });
+        }
+      } else if (this.filtroValor) {
+        const val = this.n(this.filtroValor);
+        base = base.filter(o => {
+          const campo = String(o[this.filtroCampo as keyof OrdemServico] ?? '');
+          return this.n(campo).includes(val);
+        });
+      }
     }
 
     this.ordensFiltradas = base;
@@ -991,6 +1100,9 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
       this.form = { prioridade: 'Normal', status: 'Na Fila' };
       this.showTimeline = false;
       this.formErrors = {};
+      this.tecnicoSearch = '';
+      this.clienteSearch = '';
+      this.equipamentoSearch = '';
       this.scrollToForm();
     }
   }
@@ -1012,6 +1124,9 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     this.form = { prioridade: 'Normal', status: 'Na Fila' };
     this.formErrors = {};
     this.showTimeline = false;
+    this.tecnicoSearch = '';
+    this.clienteSearch = '';
+    this.equipamentoSearch = '';
   }
 
   salvar() {
@@ -1079,6 +1194,12 @@ export class AreaTecnicoComponent implements OnInit, OnDestroy {
     this.showNewForm = false;
     this.showEditForm = true;
     this.formErrors = {};
+    const t = this.funcionarios.find(f => f.id === o.tecnicoId);
+    this.tecnicoSearch = t ? this.fmtTecnico(t) : '';
+    const c = this.clientes.find(cl => cl.id === o.clienteId);
+    this.clienteSearch = c ? this.fmtCliente(c) : '';
+    const eq = this.equipamentos.find(e => e.id === o.equipamentoId);
+    this.equipamentoSearch = eq ? this.fmtEquipamento(eq) : '';
     this.scrollToForm();
   }
 
