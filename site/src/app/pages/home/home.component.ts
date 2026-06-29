@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Subject, forkJoin, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { OrdensService } from '../../core/services/ordens.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { EquipamentosService } from '../../core/services/equipamentos.service';
@@ -478,18 +478,25 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private carregarStats() {
-    forkJoin({
-      ordens: this.ordensService.listar(),
-      clientes: this.clientesService.listar(),
-      equipamentos: this.equipamentosService.listar()
-    }).pipe(takeUntil(this.destroy$)).subscribe(({ ordens, clientes, equipamentos }) => {
+    let p1 = false, p2 = false, p3 = false;
+    const done = () => { if (p1 && p2 && p3) this.statsLoading = false; };
+
+    this.ordensService.listar().pipe(takeUntil(this.destroy$)).subscribe(ordens => {
       this.stats.totalOS = ordens.length;
       this.stats.receita = ordens
         .filter(o => (o.status === 'Pronto' || o.status === 'Entregue') && o.valorTotal)
         .reduce((acc, o) => acc + (o.valorTotal ?? 0), 0);
-      this.stats.clientesAtivos = clientes.filter(c => c.ativo).length;
-      this.stats.equipamentos = equipamentos.length;
-      this.statsLoading = false;
+      p1 = true; done();
+    });
+
+    this.clientesService.listar().pipe(takeUntil(this.destroy$)).subscribe(c => {
+      this.stats.clientesAtivos = c.filter(c => c.ativo).length;
+      p2 = true; done();
+    });
+
+    this.equipamentosService.listar().pipe(takeUntil(this.destroy$)).subscribe(e => {
+      this.stats.equipamentos = e.length;
+      p3 = true; done();
     });
   }
 
