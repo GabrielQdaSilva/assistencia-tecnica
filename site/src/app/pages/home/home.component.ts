@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, catchError, takeUntil, throwError } from 'rxjs';
 import { OrdensService } from '../../core/services/ordens.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { EquipamentosService } from '../../core/services/equipamentos.service';
@@ -44,24 +44,37 @@ import { EquipamentosService } from '../../core/services/equipamentos.service';
       <!-- Stats -->
       <section class="stats">
         <div class="section-inner">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <span class="stat-num">{{ stats.totalOS }}</span>
-              <span class="stat-label">Ordens de Serviço</span>
+          @if (statsError) {
+            <div class="stats-error">
+              <span>Não foi possível carregar as estatísticas. Verifique se o backend está rodando em <strong>http://localhost:3000</strong>.</span>
             </div>
-            <div class="stat-item">
-              <span class="stat-num">{{ stats.clientesAtivos }}</span>
-              <span class="stat-label">Clientes Ativos</span>
+          } @else if (statsLoading) {
+            <div class="stats-grid">
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Ordens de Serviço</span></div>
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Clientes Ativos</span></div>
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Equipamentos</span></div>
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Receita Total</span></div>
             </div>
-            <div class="stat-item">
-              <span class="stat-num">{{ stats.equipamentos }}</span>
-              <span class="stat-label">Equipamentos</span>
+          } @else {
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-num">{{ stats.totalOS }}</span>
+                <span class="stat-label">Ordens de Serviço</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">{{ stats.clientesAtivos }}</span>
+                <span class="stat-label">Clientes Ativos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">{{ stats.equipamentos }}</span>
+                <span class="stat-label">Equipamentos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">R$ {{ stats.receita }}</span>
+                <span class="stat-label">Receita Total</span>
+              </div>
             </div>
-            <div class="stat-item">
-              <span class="stat-num">R$ {{ stats.receita }}</span>
-              <span class="stat-label">Receita Total</span>
-            </div>
-          </div>
+          }
         </div>
       </section>
 
@@ -306,6 +319,12 @@ import { EquipamentosService } from '../../core/services/equipamentos.service';
     .stat-item:hover { border-color: rgba(6,182,212,.2); transform: translateY(-2px); box-shadow: var(--shadow); }
     .stat-num { font-size: var(--text-2xl); font-weight: 800; color: var(--primary); }
     .stat-label { font-size: var(--text-sm); color: var(--text-muted); }
+    .stats-error {
+      text-align: center; padding: var(--space-6);
+      color: var(--text-muted); font-size: var(--text-sm);
+      background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2);
+      border-radius: var(--radius-md);
+    }
 
     .section { padding: var(--space-16) 24px; }
     .section:nth-child(even) { background: var(--surface); }
@@ -439,6 +458,8 @@ import { EquipamentosService } from '../../core/services/equipamentos.service';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  statsError = false;
+  statsLoading = true;
   stats = {
     totalOS: 0,
     clientesAtivos: 0,
@@ -457,17 +478,42 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private carregarStats() {
-    this.ordensService.listar().pipe(takeUntil(this.destroy$)).subscribe(ordens => {
+    let ordensOk = false, clientesOk = false, equipOk = false;
+
+    const tentarFinalizar = () => {
+      if (ordensOk && clientesOk && equipOk) {
+        this.statsLoading = false;
+      }
+    };
+
+    this.ordensService.listar().pipe(
+      takeUntil(this.destroy$),
+      catchError(() => { this.statsError = true; this.statsLoading = false; return throwError(() => new Error('Falha ao carregar ordens')); })
+    ).subscribe(ordens => {
       this.stats.totalOS = ordens.length;
       this.stats.receita = ordens
         .filter(o => (o.status === 'Pronto' || o.status === 'Entregue') && o.valorTotal)
         .reduce((acc, o) => acc + (o.valorTotal ?? 0), 0);
+      ordensOk = true;
+      tentarFinalizar();
     });
-    this.clientesService.listar().pipe(takeUntil(this.destroy$)).subscribe(c => {
+
+    this.clientesService.listar().pipe(
+      takeUntil(this.destroy$),
+      catchError(() => { this.statsError = true; this.statsLoading = false; return throwError(() => new Error('Falha ao carregar clientes')); })
+    ).subscribe(c => {
       this.stats.clientesAtivos = c.filter(c => c.ativo).length;
+      clientesOk = true;
+      tentarFinalizar();
     });
-    this.equipamentosService.listar().pipe(takeUntil(this.destroy$)).subscribe(e => {
+
+    this.equipamentosService.listar().pipe(
+      takeUntil(this.destroy$),
+      catchError(() => { this.statsError = true; this.statsLoading = false; return throwError(() => new Error('Falha ao carregar equipamentos')); })
+    ).subscribe(e => {
       this.stats.equipamentos = e.length;
+      equipOk = true;
+      tentarFinalizar();
     });
   }
 
