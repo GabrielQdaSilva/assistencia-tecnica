@@ -2,9 +2,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, switchMap, takeUntil } from 'rxjs';
+import { Subject, catchError, switchMap, takeUntil, throwError } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { OrdensService } from '../../core/services/ordens.service';
+import { ClientesService } from '../../core/services/clientes.service';
 import { MensagensService } from '../../core/services/mensagens.service';
 import { ChamadosService } from '../../core/services/chamados.service';
 import { ChamadoMensagensService } from '../../core/services/chamado-mensagens.service';
@@ -36,6 +37,41 @@ import { OrdemServico, Mensagem, Chamado, ChamadoMensagem, Equipamento } from '.
           <h1>Olá, {{ auth.getUser()?.nome }}!</h1>
           <p>Aqui você pode acompanhar seus pedidos, conversar com a equipe e abrir chamados.</p>
         </div>
+
+        <!-- Stats Globais -->
+        <section class="cliente-stats">
+          @if (statsError) {
+            <div class="stats-error">
+              <span>Não foi possível carregar as estatísticas. Verifique se o backend está rodando.</span>
+            </div>
+          } @else if (statsLoading) {
+            <div class="stats-grid">
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Ordens de Serviço</span></div>
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Clientes Ativos</span></div>
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Equipamentos</span></div>
+              <div class="stat-item"><span class="stat-num">...</span><span class="stat-label">Receita Total</span></div>
+            </div>
+          } @else {
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-num">{{ stats.totalOS }}</span>
+                <span class="stat-label">Ordens de Serviço</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">{{ stats.clientesAtivos }}</span>
+                <span class="stat-label">Clientes Ativos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">{{ stats.equipamentos }}</span>
+                <span class="stat-label">Equipamentos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">R$ {{ stats.receita }}</span>
+                <span class="stat-label">Receita Total</span>
+              </div>
+            </div>
+          }
+        </section>
 
         <!-- Abas -->
         <div class="cliente-tabs">
@@ -382,6 +418,15 @@ import { OrdemServico, Mensagem, Chamado, ChamadoMensagem, Equipamento } from '.
     .chamado-card-ativo { border-color: var(--primary); border-left: 3px solid var(--primary); }
     .chamado-footer { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
     .chamado-msgs { font-size: .75rem; color: var(--primary); font-weight: 600; margin-left: auto; }
+
+    .cliente-stats { margin-bottom: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); text-align: center; }
+    .stat-item { padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border); transition: all var(--transition-slow); display: flex; flex-direction: column; gap: 4px; background: var(--surface); }
+    .stat-item:hover { border-color: rgba(6,182,212,.2); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .stat-num { font-size: var(--text-2xl); font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: var(--text-sm); color: var(--text-muted); }
+    .stats-error { text-align: center; padding: var(--space-6); color: var(--text-muted); font-size: var(--text-sm); background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); border-radius: var(--radius-md); }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
     .conversa-thread {
       margin: -8px 0 8px; padding: 16px 20px;
       background: var(--surface); border: 1px solid var(--border); border-top: none;
@@ -409,6 +454,15 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   aba: 'pedidos' | 'chat' | 'chamados' = 'pedidos';
 
+  statsError = false;
+  statsLoading = true;
+  stats = {
+    totalOS: 0,
+    clientesAtivos: 0,
+    equipamentos: 0,
+    receita: 0
+  };
+
   pedidos: OrdemServico[] = [];
   meusChamados: Chamado[] = [];
   meusEquipamentos: Equipamento[] = [];
@@ -431,6 +485,7 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
   constructor(
     public auth: AuthService,
     private ordensService: OrdensService,
+    private clientesService: ClientesService,
     private mensagensService: MensagensService,
     private chamadosService: ChamadosService,
     private chamadoMsgService: ChamadoMensagensService,
@@ -442,6 +497,47 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
     const user = this.auth.getUser();
     if (!user) { this.router.navigate(['/login']); return; }
     this.carregarDados();
+    this.carregarStats();
+  }
+
+  private carregarStats() {
+    let ordensOk = false, clientesOk = false, equipOk = false;
+
+    const tentarFinalizar = () => {
+      if (ordensOk && clientesOk && equipOk) {
+        this.statsLoading = false;
+      }
+    };
+
+    this.ordensService.listar().pipe(
+      takeUntil(this.destroy$),
+      catchError(() => { this.statsError = true; this.statsLoading = false; return throwError(() => new Error('')); })
+    ).subscribe(ordens => {
+      this.stats.totalOS = ordens.length;
+      this.stats.receita = ordens
+        .filter(o => (o.status === 'Pronto' || o.status === 'Entregue') && o.valorTotal)
+        .reduce((acc, o) => acc + (o.valorTotal ?? 0), 0);
+      ordensOk = true;
+      tentarFinalizar();
+    });
+
+    this.clientesService.listar().pipe(
+      takeUntil(this.destroy$),
+      catchError(() => { this.statsError = true; this.statsLoading = false; return throwError(() => new Error('')); })
+    ).subscribe(c => {
+      this.stats.clientesAtivos = c.filter(c => c.ativo).length;
+      clientesOk = true;
+      tentarFinalizar();
+    });
+
+    this.equipamentosService.listar().pipe(
+      takeUntil(this.destroy$),
+      catchError(() => { this.statsError = true; this.statsLoading = false; return throwError(() => new Error('')); })
+    ).subscribe(e => {
+      this.stats.equipamentos = e.length;
+      equipOk = true;
+      tentarFinalizar();
+    });
   }
 
   private mostrarToast(message: string, tipo: 'success' | 'error' = 'success') {
